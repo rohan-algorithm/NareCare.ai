@@ -49,13 +49,15 @@ export default function Paywall() {
   const hasTrial = billingConfigured ? Boolean(byId[selected]?.hasFreeTrial) : true;
 
   const outcomes: { icon: IconName; text: string }[] = [
-    { icon: 'checkmark-done', text: hi ? 'रोज़ 3 काम, ~5 मिनट: खाएँ, मूव, लॉग' : 'Daily 3 things, ~5 min: eat, move, log' },
-    { icon: 'restaurant', text: hi ? 'आपके घर, मेस या टिफ़िन के हिसाब से खाना' : 'Meals for your home, mess or tiffin' },
-    { icon: 'trending-up', text: hi ? 'हर हफ्ते सबूत कि प्लान काम कर रहा है' : 'Weekly proof that your plan is working' },
-    { icon: 'flask', text: hi ? 'लैब रिपोर्ट फोटो से, सरल हिंदी में' : 'Lab reports from a photo, in plain Hindi' },
-    { icon: 'document-text', text: hi ? 'गाइनी के लिए 1-पेज PDF' : 'One-page PDF for your gynae' },
-    { icon: 'sparkles', text: hi ? 'AI कोच जो आपका डेटा जानता है' : 'AI coach that knows your data' },
+    { icon: 'restaurant', text: hi ? 'आपकी पसंद, डाइट और रसोई के हिसाब से 7-दिन का खाना प्लान' : 'A 7-day meal plan for your taste, diet and kitchen' },
+    { icon: 'camera', text: hi ? 'थाली स्कैनर: किसी भी खाने का PCOS स्कोर' : 'Plate scanner: a PCOS score for any meal' },
+    { icon: 'trending-up', text: hi ? 'प्रोग्रेस प्रूफ़: वज़न, कमर, त्वचा, बाल, मूड, पीरियड' : 'Progress proof: weight, waist, skin, hair, mood, cycles' },
+    { icon: 'school', text: hi ? '8-हफ्ते की PCOS अकादमी, हिंदी और अंग्रेज़ी में' : '8-week PCOS Academy in Hindi & English' },
+    { icon: 'fitness', text: hi ? '15-मिनट घरेलू वर्कआउट, डेमो के साथ' : '15-minute home workouts with demos' },
+    { icon: 'flask', text: hi ? 'लैब रिपोर्ट सरल हिंदी में + डॉक्टर PDF' : 'Lab reports in plain Hindi + doctor PDF' },
+    { icon: 'sparkles', text: hi ? 'AI कोच जो आपका डेटा जानता है, 24x7' : 'AI coach that knows your data, 24x7' },
   ];
+
 
   const plansUi: { id: PlanType; title: string; sub: string; badge?: string }[] = [
     { id: 'annual', title: hi ? 'सालाना' : 'Yearly', sub: hi ? '₹83/महीना · सबसे ज़्यादा बचत' : '₹83/month · best value', badge: hi ? 'सबसे लोकप्रिय' : 'Most popular' },

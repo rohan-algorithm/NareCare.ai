@@ -12,6 +12,7 @@ import { colors, fonts, gradients, shadowCard, spacing } from '@/src/theme/token
 import { Ionicons, IconBubble, type IconName } from '@/src/ui/Icon';
 import { ProgressRing } from '@/src/ui/ProgressRing';
 import { TrialWins } from '@/src/ui/TrialWins';
+import { nextLesson, programWeek } from '@/src/content/academy';
 import { dailyAiTip } from '@/src/features/aiCoach';
 import { useAppStore } from '@/src/store/useAppStore';
 import { getCycleDay, getCyclePhase, phaseCopy } from '@/src/features/cycle';
@@ -36,6 +37,10 @@ export default function Home() {
   const setAlarmsArmed = useAppStore((s) => s.setAlarmsArmed);
   const exerciseLogs = useAppStore((s) => s.exerciseLogs);
   const mealMarks = useAppStore((s) => s.mealMarks);
+  const lessonsDone = useAppStore((s) => s.lessonsDone);
+  const programStart = useAppStore((s) => s.programStart);
+  const ensureProgramStart = useAppStore((s) => s.ensureProgramStart);
+  const ttcOn = useAppStore((s) => s.ttc.on);
   const [arming, setArming] = useState(false);
   const lang = profile?.language ?? 'en';
   const hi = lang === 'hi';
@@ -47,6 +52,8 @@ export default function Home() {
     resetCouncilIfNeeded();
     resetScheduleIfNeeded();
   }, [resetWaterIfNeeded, resetHabitsIfNeeded, resetCouncilIfNeeded, resetScheduleIfNeeded]);
+
+  useEffect(() => ensureProgramStart(), [ensureProgramStart]);
 
   useEffect(() => {
     if (!hasSeenGuide) {
@@ -166,10 +173,19 @@ export default function Home() {
   const doneCount = tasks.filter((t) => t.done).length;
   const pct = Math.round((doneCount / tasks.length) * 100);
 
+  const goals = profile?.goals ?? [];
+  const week = programWeek(programStart);
+  const lesson = nextLesson(week, lessonsDone, goals);
+
   const proTools: { icon: IconName; label: string; sub: string; href: string; fg: string; bg: string }[] = [
-    { icon: 'stats-chart', label: hi ? 'प्रोग्रेस प्रूफ' : 'Progress proof', sub: hi ? 'हर हफ्ते क्या काम कर रहा है' : 'What’s working, weekly', href: '/weekly', fg: '#E24B5A', bg: '#FFE4DE' },
+    { icon: 'stats-chart', label: hi ? 'प्रोग्रेस प्रूफ़' : 'Progress proof', sub: hi ? 'वज़न, त्वचा, मूड, पीरियड' : 'Weight, skin, mood, cycles', href: '/progress', fg: '#E24B5A', bg: '#FFE4DE' },
+    { icon: 'school', label: hi ? 'PCOS अकादमी' : 'PCOS Academy', sub: hi ? '8 हफ्ते, 2-मिनट पाठ' : '8 weeks, 2-min lessons', href: '/learn', fg: '#2A8F6A', bg: '#E2F4EC' },
+    { icon: 'camera', label: hi ? 'थाली स्कैनर' : 'Plate scanner', sub: hi ? 'थाली का PCOS स्कोर' : 'PCOS score for any meal', href: '/plate', fg: '#E8801A', bg: '#FFEFD9' },
     { icon: 'flask', label: hi ? 'लैब डिकोडर' : 'Lab decoder', sub: hi ? 'रिपोर्ट सरल भाषा में' : 'Reports in plain language', href: '/labs', fg: '#7C5CFF', bg: '#EEE9FF' },
-    { icon: 'document-text', label: hi ? 'डॉक्टर किट' : 'Doctor kit', sub: hi ? 'गाइनी के लिए 1 पेज' : 'One page for your gynae', href: '/doctor-kit', fg: '#2A8F6A', bg: '#E2F4EC' },
+    ...(goals.includes('fertility') || ttcOn
+      ? [{ icon: 'heart' as IconName, label: hi ? 'कंसीव करने की कोशिश' : 'Trying to conceive', sub: hi ? 'फर्टाइल विंडो, LH टेस्ट' : 'Fertile window, LH tests', href: '/ttc', fg: '#C4453A', bg: '#FFE9E5' }]
+      : []),
+    { icon: 'document-text', label: hi ? 'डॉक्टर किट' : 'Doctor kit', sub: hi ? 'गाइनी के लिए 1 पेज' : 'One page for your gynae', href: '/doctor-kit', fg: '#0E8A9A', bg: '#DFF4F7' },
     { icon: 'chatbubbles', label: hi ? 'कम्युनिटी' : 'Community', sub: hi ? 'गुमनाम और सुरक्षित' : 'Anonymous & safe', href: '/community', fg: '#4A4F8A', bg: '#EEF0FF' },
   ];
 
@@ -250,6 +266,17 @@ export default function Home() {
           </Animated.View>
         ))}
       </View>
+
+      {lesson ? (
+        <Pressable onPress={() => router.push(`/learn/${lesson.id}` as any)} style={styles.lessonCard}>
+          <IconBubble name="school" color="#2A8F6A" bg="#E2F4EC" />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.lessonKicker}>{hi ? `आज का 2-मिनट पाठ · हफ्ता ${week}` : `Today’s 2-min lesson · Week ${week}`}</Text>
+            <Text style={styles.lessonTitle}>{hi ? lesson.title.hi : lesson.title.en}</Text>
+          </View>
+          <Ionicons name="play-circle" size={28} color="#2A8F6A" />
+        </Pressable>
+      ) : null}
 
       <TrialWins />
 
@@ -424,6 +451,9 @@ const styles = StyleSheet.create({
   task: { ...CARD, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 },
   taskTitle: { fontFamily: fonts.bodyBold, fontSize: 15, color: colors.ink },
   taskSub: { fontFamily: fonts.body, fontSize: 12.5, color: colors.muted, marginTop: 2 },
+  lessonCard: { ...CARD, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, marginTop: spacing.md, borderWidth: 1, borderColor: '#CDEBDD' },
+  lessonKicker: { fontFamily: fonts.bodyBold, fontSize: 11, letterSpacing: 0.4, textTransform: 'uppercase', color: '#2A8F6A' },
+  lessonTitle: { fontFamily: fonts.bodyBold, fontSize: 15, color: colors.ink, marginTop: 2 },
   moreRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: spacing.md, paddingVertical: 10 },
   moreText: { fontFamily: fonts.bodyMedium, fontSize: 13, color: colors.muted, flex: 1 },
   schedHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },

@@ -15,6 +15,13 @@ export type AiContext = {
   mealsFollowed: number;
   streakDays: number;
   pulse: { score: number; headline: string; wins: string[] };
+  body: { startKg?: number; latestKg?: number; latestWaistCm?: number; entries: number };
+  skin: { facialHair: number; hairFall: number; acne: number; month: string } | null;
+  mind: { phq2: number; gad2: number; date: string } | null;
+  ttc: { on: boolean; triedMonths: string | null; lastLhPositive: string | null };
+  goals: string[];
+  lessonsDone: number;
+  avgPlateScore7d: number | null;
 };
 
 type Source = {
@@ -23,6 +30,13 @@ type Source = {
   exerciseLogs: { date: string; completed: boolean }[];
   mealMarks: Record<string, string>;
   streakDays: number;
+  bodyLogs?: { date: string; weightKg?: number; waistCm?: number }[];
+  skinLogs?: { date: string; facialHair: number; hairFall: number; acne: number }[];
+  mindChecks?: { date: string; phq2: number; gad2: number }[];
+  ttc?: { on: boolean; since: string | null; lhTests: { date: string; result: string }[] };
+  profile?: { goals?: string[] } | null;
+  lessonsDone?: string[];
+  plateScans?: { date: string; score: number }[];
 };
 
 export function buildAiContext(s: Source): AiContext {
@@ -49,6 +63,30 @@ export function buildAiContext(s: Source): AiContext {
     mealsFollowed: Object.values(s.mealMarks).filter((m) => m === 'ate' || m === 'swapped').length,
     streakDays: s.streakDays,
     pulse: { score: pulse.score, headline: pulse.headline, wins: pulse.wins },
+    body: (() => {
+      const w = (s.bodyLogs ?? []).filter((b) => b.weightKg);
+      const c = (s.bodyLogs ?? []).filter((b) => b.waistCm);
+      return { startKg: w[0]?.weightKg, latestKg: w[w.length - 1]?.weightKg, latestWaistCm: c[c.length - 1]?.waistCm, entries: (s.bodyLogs ?? []).length };
+    })(),
+    skin: (() => {
+      const l = (s.skinLogs ?? [])[(s.skinLogs ?? []).length - 1];
+      return l ? { facialHair: l.facialHair, hairFall: l.hairFall, acne: l.acne, month: l.date } : null;
+    })(),
+    mind: (() => {
+      const m = (s.mindChecks ?? [])[(s.mindChecks ?? []).length - 1];
+      return m ? { phq2: m.phq2, gad2: m.gad2, date: m.date } : null;
+    })(),
+    ttc: {
+      on: !!s.ttc?.on,
+      triedMonths: s.ttc?.since ?? null,
+      lastLhPositive: [...(s.ttc?.lhTests ?? [])].reverse().find((t) => t.result === 'pos')?.date ?? null,
+    },
+    goals: s.profile?.goals ?? [],
+    lessonsDone: (s.lessonsDone ?? []).length,
+    avgPlateScore7d: (() => {
+      const recent = (s.plateScans ?? []).filter((p) => p.date >= since(7));
+      return recent.length ? Math.round((recent.reduce((a, p) => a + p.score, 0) / recent.length) * 10) / 10 : null;
+    })(),
   };
 }
 

@@ -19,7 +19,7 @@ export function toMarkerValues(raw: Record<string, number>): Record<string, numb
 }
 
 /** Returns null when the user cancels the picker. */
-export async function scanLabReport(source: 'camera' | 'library'): Promise<Record<string, number> | null> {
+export async function pickPhoto(source: 'camera' | 'library'): Promise<{ base64: string; mimeType: string } | null> {
   if (source === 'camera') {
     const perm = await ImagePicker.requestCameraPermissionsAsync();
     if (!perm.granted) throw new Error('camera-denied');
@@ -32,11 +32,14 @@ export async function scanLabReport(source: 'camera' | 'library'): Promise<Recor
   if (picked.canceled) return null;
   const asset = picked.assets[0];
   if (!asset.base64) throw new Error('no-image');
-  const res = await callEdge<OcrResult>(
-    'lab-ocr',
-    { image: asset.base64, mimeType: asset.mimeType ?? 'image/jpeg' },
-    45000,
-  );
+  return { base64: asset.base64, mimeType: asset.mimeType ?? 'image/jpeg' };
+}
+
+/** Returns null when the user cancels the picker. */
+export async function scanLabReport(source: 'camera' | 'library'): Promise<Record<string, number> | null> {
+  const photo = await pickPhoto(source);
+  if (!photo) return null;
+  const res = await callEdge<OcrResult>('lab-ocr', { image: photo.base64, mimeType: photo.mimeType }, 45000);
   const values = toMarkerValues(res.values ?? {});
   if (!res.readable || Object.keys(values).length === 0) throw new Error('unreadable');
   return values;

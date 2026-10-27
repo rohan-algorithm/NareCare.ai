@@ -54,6 +54,13 @@ export type ExerciseLog = {
   completed: boolean;
 };
 
+export type BodyLog = { date: string; weightKg?: number; waistCm?: number };
+export type SkinLog = { date: string; facialHair: number; hairFall: number; acne: number };
+export type MindCheck = { date: string; phq2: number; gad2: number };
+export type LhTest = { date: string; result: 'neg' | 'pos' };
+export type PlateScan = { date: string; score: number; label: string };
+export type TtcState = { on: boolean; since: string | null; lhTests: LhTest[] };
+
 export type CommunityPost = {
   id: string;
   category: 'diet_tips' | 'success_stories' | 'questions' | 'emotional_support';
@@ -119,6 +126,22 @@ type AppState = {
   toggleHabit: (key: 'focus' | 'move') => void;
   markMeal: (mealKey: string, status: 'ate' | 'swapped' | 'skipped') => void;
   mealSwaps: Record<string, string>;
+  bodyLogs: BodyLog[];
+  logBody: (entry: BodyLog) => void;
+  skinLogs: SkinLog[];
+  logSkin: (entry: SkinLog) => void;
+  mindChecks: MindCheck[];
+  logMind: (entry: MindCheck) => void;
+  lessonsDone: string[];
+  lastLessonDate: string | null;
+  completeLesson: (id: string) => void;
+  programStart: string | null;
+  ensureProgramStart: () => void;
+  ttc: TtcState;
+  setTtc: (patch: Partial<TtcState>) => void;
+  logLh: (test: LhTest) => void;
+  plateScans: PlateScan[];
+  addPlateScan: (scan: PlateScan) => void;
   hiddenPostIds: string[];
   hidePost: (id: string) => void;
   reportedIds: string[];
@@ -390,6 +413,28 @@ export const useAppStore = create<AppState>()(
       markMeal: (mealKey, status) =>
         set({ mealMarks: { ...get().mealMarks, [mealKey]: status } }),
       mealSwaps: {},
+      bodyLogs: [],
+      logBody: (entry) =>
+        set({ bodyLogs: [...get().bodyLogs.filter((x) => x.date !== entry.date), entry].sort((a, b) => a.date.localeCompare(b.date)).slice(-400) }),
+      skinLogs: [],
+      logSkin: (entry) =>
+        set({ skinLogs: [...get().skinLogs.filter((x) => x.date !== entry.date), entry].sort((a, b) => a.date.localeCompare(b.date)).slice(-400) }),
+      mindChecks: [],
+      logMind: (entry) =>
+        set({ mindChecks: [...get().mindChecks.filter((x) => x.date !== entry.date), entry].sort((a, b) => a.date.localeCompare(b.date)).slice(-400) }),
+      lessonsDone: [],
+      lastLessonDate: null,
+      completeLesson: (id) => set({ lessonsDone: [...new Set([...get().lessonsDone, id])], lastLessonDate: today() }),
+      programStart: null,
+      ensureProgramStart: () => {
+        if (!get().programStart) set({ programStart: new Date().toISOString() });
+      },
+      ttc: { on: false, since: null, lhTests: [] },
+      setTtc: (patch) => set({ ttc: { ...get().ttc, ...patch } }),
+      logLh: (test) =>
+        set({ ttc: { ...get().ttc, lhTests: [...get().ttc.lhTests.filter((t) => t.date !== test.date), test].slice(-120) } }),
+      plateScans: [],
+      addPlateScan: (scan) => set({ plateScans: [...get().plateScans, scan].slice(-200) }),
       hiddenPostIds: [],
       hidePost: (id) => set({ hiddenPostIds: [...new Set([...get().hiddenPostIds, id])] }),
       reportedIds: [],
@@ -635,6 +680,14 @@ export const useAppStore = create<AppState>()(
         alarmsArmed: s.alarmsArmed,
         freeDecodeUsed: s.freeDecodeUsed,
         mealSwaps: s.mealSwaps,
+        bodyLogs: s.bodyLogs,
+        skinLogs: s.skinLogs,
+        mindChecks: s.mindChecks,
+        lessonsDone: s.lessonsDone,
+        lastLessonDate: s.lastLessonDate,
+        programStart: s.programStart,
+        ttc: s.ttc,
+        plateScans: s.plateScans,
         hiddenPostIds: s.hiddenPostIds,
         reportedIds: s.reportedIds,
         doctorKitExports: s.doctorKitExports,

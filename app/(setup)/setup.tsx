@@ -32,7 +32,8 @@ const GOALS = [
   { id: 'lose_weight', en: 'Lose weight', hi: 'वजन कम' },
   { id: 'regulate_periods', en: 'Regulate periods', hi: 'पीरियड नियमित' },
   { id: 'fertility', en: 'Improve fertility', hi: 'फर्टिलिटी' },
-  { id: 'manage_symptoms', en: 'Manage symptoms', hi: 'लक्षण मैनेज' },
+  { id: 'skin_hair', en: 'Clear skin & less facial hair', hi: 'साफ़ त्वचा, कम अनचाहे बाल' },
+  { id: 'manage_symptoms', en: 'Manage mood & symptoms', hi: 'मूड और लक्षण मैनेज' },
   { id: 'wellness', en: 'General wellness', hi: 'समग्र स्वास्थ्य' },
 ];
 

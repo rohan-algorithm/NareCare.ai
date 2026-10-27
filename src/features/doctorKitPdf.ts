@@ -21,7 +21,34 @@ export type KitData = {
   livingContext: string;
   lab: LabAnalysis | undefined;
   questions: string[];
+  body?: { date: string; weightKg?: number; waistCm?: number }[];
+  skin?: { date: string; facialHair: number; hairFall: number; acne: number }[];
+  mind?: { date: string; phq2: number; gad2: number }[];
+  ttc?: { on: boolean; since: string | null; positives: number };
 };
+
+function extras(d: KitData): string {
+  const parts: string[] = [];
+  const w = (d.body ?? []).filter((b) => b.weightKg);
+  const c = (d.body ?? []).filter((b) => b.waistCm);
+  if (w.length || c.length) {
+    const wTxt = w.length ? `${w[0].weightKg} kg (${esc(w[0].date)}) → ${w[w.length - 1].weightKg} kg (${esc(w[w.length - 1].date)})` : '—';
+    const cTxt = c.length ? `${c[0].waistCm} cm → ${c[c.length - 1].waistCm} cm` : '—';
+    parts.push(`<h2>Weight & waist</h2><div class="grid"><div><b>Weight:</b> ${wTxt}</div><div><b>Waist:</b> ${cTxt}</div></div>`);
+  }
+  if (d.skin?.length) {
+    const rows = d.skin.slice(-4).map((s) => `<tr><td>${esc(s.date)}</td><td>${s.facialHair}</td><td>${s.hairFall}</td><td>${s.acne}</td></tr>`).join('');
+    parts.push(`<h2>Skin & hair self-scores (0 none – 4 severe)</h2><table><tr><th>Month</th><th>Facial/body hair</th><th>Hair fall</th><th>Acne</th></tr>${rows}</table>`);
+  }
+  if (d.mind?.length) {
+    const m = d.mind[d.mind.length - 1];
+    parts.push(`<h2>Mood screen (${esc(m.date)})</h2><p>PHQ-2: ${m.phq2}/6 · GAD-2: ${m.gad2}/6 ${m.phq2 >= 3 || m.gad2 >= 3 ? '<span class="flag">(≥3: further assessment suggested)</span>' : ''}</p>`);
+  }
+  if (d.ttc?.on) {
+    parts.push(`<h2>Trying to conceive</h2><p>Trying for: ${esc(d.ttc.since ?? 'not set')} months band · Positive LH tests logged: ${d.ttc.positives}</p>`);
+  }
+  return parts.join('');
+}
 
 function symptomTable(logs: SymptomLog[]): string {
   const recent = [...logs].sort((a, b) => b.logDate.localeCompare(a.logDate)).slice(0, 28);
@@ -70,6 +97,7 @@ function html(d: KitData): string {
   <div><b>Post-meal energy crashes:</b> ${d.crashDays}</div></div>
   ${d.pulse.wins.length ? `<p><b>Wins:</b> ${d.pulse.wins.map(esc).join('; ')}</p>` : ''}
   <h2>Symptoms</h2>${symptomTable(d.logs)}
+  ${extras(d)}
   <h2>Latest lab values${d.lab ? ` (${esc(d.lab.createdAt.slice(0, 10))})` : ''}</h2>
   ${d.lab ? `<table><tr><th>Marker</th><th>Value</th><th>Status</th></tr>${labRows}</table>` : '<p class="muted">No lab report added.</p>'}
   <h2>Questions for this visit</h2><ol>${d.questions.map((q) => `<li>${esc(q)}</li>`).join('')}</ol>

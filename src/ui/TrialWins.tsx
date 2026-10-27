@@ -15,7 +15,7 @@ export function TrialWins() {
   const moves = useAppStore((s) => s.exerciseLogs);
   const labs = useAppStore((s) => s.labAnalyses);
   const chat = useAppStore((s) => s.chat);
-  const kits = useAppStore((s) => s.doctorKitExports);
+  const lessons = useAppStore((s) => s.lessonsDone);
   const hi = useAppStore((s) => s.profile?.language) === 'hi';
   const [now] = useState(() => Date.now());
 
@@ -31,7 +31,7 @@ export function TrialWins() {
     { done: labs.length >= 1, en: 'Decode a lab report', hi: 'एक लैब रिपोर्ट डिकोड करें', href: '/labs' },
     { done: chat.some((m) => m.role === 'user'), en: 'Ask the AI coach one question', hi: 'AI कोच से एक सवाल पूछें', href: '/coach' },
     { done: logs.length >= 3, en: 'Log 3 days (unlocks your first insight)', hi: '3 दिन लॉग करें (पहली इनसाइट)', href: '/track' },
-    { done: kits >= 1, en: 'Create your doctor PDF', hi: 'डॉक्टर PDF बनाएँ', href: '/doctor-kit' },
+    { done: lessons.length >= 1, en: 'Read your first 2-min lesson', hi: 'पहला 2-मिनट पाठ पढ़ें', href: '/learn' },
   ];
   const done = wins.filter((w) => w.done).length;
   const next = wins.find((w) => !w.done);

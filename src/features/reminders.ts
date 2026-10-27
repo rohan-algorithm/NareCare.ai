@@ -2,6 +2,7 @@ import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
 import { getExercise, todaysExercises } from '@/src/content/exercises';
+import { nextLesson, programWeek } from '@/src/content/academy';
 import { getCycleDay, getCyclePhase } from '@/src/features/cycle';
 import { predictNextPeriod } from '@/src/features/insights';
 import { localDate, planForDate, prefsFrom } from '@/src/features/mealPlan';
@@ -174,7 +175,37 @@ function buildNudges(): Nudge[] {
         channel: 'naricare-streak',
       });
     }
-    if (new Date(y, m - 1, dd).getDay() === 0) {
+    const weekday = new Date(y, m - 1, dd).getDay();
+    const wantsBody = (p?.goals ?? []).includes('lose_weight') || s.bodyLogs.length > 0;
+    if (wantsBody && weekday === 1 && !(isToday && s.bodyLogs.some((b) => b.date === today))) {
+      out.push({
+        at: at(date, 7, 30),
+        title: hi ? '⚖️ सोमवार का वज़न और कमर' : '⚖️ Monday weigh-in',
+        body: hi ? 'खाने से पहले, 30 सेकंड। आपका 5% लक्ष्य चार्ट पर है।' : 'Before breakfast, 30 seconds. Your 5% goal is on the chart.',
+        href: '/progress',
+        channel: 'naricare-daily',
+      });
+    }
+    if (dd === 1) {
+      out.push({
+        at: at(date, 19, 0),
+        title: hi ? '🪞 मासिक त्वचा, बाल और मूड चेक-इन' : '🪞 Monthly skin, hair & mood check-in',
+        body: hi ? '1 मिनट। 3–6 महीने में यही आपका सबसे बड़ा सबूत बनेगा।' : 'One minute. Over 3–6 months this becomes your strongest proof.',
+        href: '/progress?tab=skin',
+        channel: 'naricare-daily',
+      });
+    }
+    const lesson = nextLesson(programWeek(s.programStart, at(date, 12, 0)), s.lessonsDone, p?.goals ?? []);
+    if (lesson && !(isToday && s.lastLessonDate === today) && d % 2 === 0) {
+      out.push({
+        at: at(date, 20, 30),
+        title: hi ? `📖 2 मिनट: ${lesson.title.hi}` : `📖 2 minutes: ${lesson.title.en}`,
+        body: hi ? 'आज का छोटा पाठ, सरल भाषा में। सुन भी सकती हैं।' : 'Today’s short lesson, in plain words. You can listen to it too.',
+        href: `/learn/${lesson.id}`,
+        channel: 'naricare-daily',
+      });
+    }
+    if (weekday === 0) {
       out.push({
         at: at(date, 10, 0),
         title: hi ? '📈 आपका साप्ताहिक सबूत तैयार है' : '📈 Your weekly proof is ready',

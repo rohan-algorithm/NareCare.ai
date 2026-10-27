@@ -125,3 +125,16 @@ export function predictNextPeriod(logs: SymptomLog[]): {
     labelHi: `अगला पीरियड ~${format(next, 'd MMM')} · औसत ${avg} दिन`,
   };
 }
+
+/** Lengths between logged period starts, oldest first. */
+export function cycleLengths(logs: SymptomLog[]): { start: string; days: number }[] {
+  const starts = logs
+    .filter((l) => l.periodStatus === 'started')
+    .map((l) => l.logDate)
+    .sort();
+  const out: { start: string; days: number }[] = [];
+  for (let i = 1; i < starts.length; i++) {
+    out.push({ start: starts[i], days: differenceInCalendarDays(parseISO(starts[i]), parseISO(starts[i - 1])) });
+  }
+  return out;
+}

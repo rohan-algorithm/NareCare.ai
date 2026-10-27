@@ -117,6 +117,15 @@ export default function Diet() {
         <Tag icon="home" text={livingContextLabel(prefs.context, lang)} />
       </View>
 
+      <Pressable onPress={() => router.push('/plate' as any)} style={styles.scan}>
+        <Ionicons name="camera" size={22} color="#E8801A" />
+        <View style={{ flex: 1 }}>
+          <Text style={styles.scanTitle}>{hi ? 'थाली स्कैन करें' : 'Scan any plate'}</Text>
+          <Text style={styles.scanSub}>{hi ? 'घर, मेस या शादी: PCOS स्कोर + एक सुधार' : 'Home, mess or a wedding: PCOS score + one fix'}</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={18} color={colors.muted} />
+      </Pressable>
+
       {editing && (
         <Animated.View entering={FadeInDown.duration(250)} style={styles.card}>
           <PrefGroup title={hi ? 'डाइट' : 'Diet'}>
@@ -338,6 +347,9 @@ const styles = StyleSheet.create({
   swapRow: { paddingVertical: 8, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.line },
   swapFrom: { fontFamily: fonts.bodyBold, fontSize: 13.5, color: colors.ink },
   swapTo: { fontFamily: fonts.body, fontSize: 13, color: colors.muted, marginTop: 2 },
+  scan: { ...CARD, flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: spacing.md, borderWidth: 1, borderColor: '#FFE0BF' },
+  scanTitle: { fontFamily: fonts.bodyBold, fontSize: 15, color: colors.ink },
+  scanSub: { fontFamily: fonts.body, fontSize: 12.5, color: colors.muted, marginTop: 2 },
   grocery: { ...CARD, flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: spacing.md },
   groceryText: { flex: 1, fontFamily: fonts.bodyBold, fontSize: 14, color: colors.ink },
 });

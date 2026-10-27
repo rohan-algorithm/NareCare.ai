@@ -56,6 +56,8 @@ export function useNudgeEngine() {
         s.exerciseLogs !== prev.exerciseLogs ||
         s.mealMarks !== prev.mealMarks ||
         s.mealSwaps !== prev.mealSwaps ||
+        s.bodyLogs !== prev.bodyLogs ||
+        s.lessonsDone !== prev.lessonsDone ||
         s.scheduleDone !== prev.scheduleDone ||
         s.reminders !== prev.reminders ||
         s.profile !== prev.profile ||

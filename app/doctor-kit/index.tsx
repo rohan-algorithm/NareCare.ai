@@ -23,6 +23,10 @@ export default function DoctorKit() {
   const exerciseLogs = useAppStore((s) => s.exerciseLogs);
   const labAnalyses = useAppStore((s) => s.labAnalyses);
   const noteDoctorKitExport = useAppStore((s) => s.noteDoctorKitExport);
+  const bodyLogs = useAppStore((s) => s.bodyLogs);
+  const skinLogs = useAppStore((s) => s.skinLogs);
+  const mindChecks = useAppStore((s) => s.mindChecks);
+  const ttc = useAppStore((s) => s.ttc);
   const [pdfBusy, setPdfBusy] = useState(false);
   const lang = profile?.language ?? 'en';
   const pulse = computeProgressPulse(logs, lang);
@@ -70,6 +74,10 @@ export default function DoctorKit() {
         livingContext: profile?.livingContext?.replaceAll('_', ' ') ?? '—',
         lab: labAnalyses[0],
         questions: [...(labAnalyses[0]?.doctorQuestions ?? []).slice(0, 3), ...CONSULT_QUESTIONS.slice(0, 5).map((q) => q.en)],
+        body: bodyLogs,
+        skin: skinLogs,
+        mind: mindChecks,
+        ttc: { on: ttc.on, since: ttc.since, positives: ttc.lhTests.filter((t) => t.result === 'pos').length },
       });
       noteDoctorKitExport();
     } catch {
