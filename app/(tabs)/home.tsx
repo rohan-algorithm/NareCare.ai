@@ -13,6 +13,8 @@ import { Ionicons, IconBubble, type IconName } from '@/src/ui/Icon';
 import { ProgressRing } from '@/src/ui/ProgressRing';
 import { TrialWins } from '@/src/ui/TrialWins';
 import { nextLesson, programWeek } from '@/src/content/academy';
+import { boostFor, planToday } from '@/src/features/todayWorkout';
+import { buildWorkout } from '@/src/features/workoutEngine';
 import { dailyAiTip } from '@/src/features/aiCoach';
 import { useAppStore } from '@/src/store/useAppStore';
 import { getCycleDay, getCyclePhase, phaseCopy } from '@/src/features/cycle';
@@ -41,6 +43,12 @@ export default function Home() {
   const programStart = useAppStore((s) => s.programStart);
   const ensureProgramStart = useAppStore((s) => s.ensureProgramStart);
   const ttcOn = useAppStore((s) => s.ttc.on);
+  const moveSettings = useAppStore((s) => s.moveSettings);
+  const activeProgram = useAppStore((s) => s.activeProgram);
+  const todayMove = useMemo(() => {
+    const plan = planToday(moveSettings, activeProgram, logs);
+    return buildWorkout(plan.focus, { ...moveSettings, minutes: plan.minutes, lowImpact: plan.lowImpact }, plan.seed, boostFor(plan.week), profile?.weightKg);
+  }, [moveSettings, activeProgram, logs, profile?.weightKg]);
   const [arming, setArming] = useState(false);
   const lang = profile?.language ?? 'en';
   const hi = lang === 'hi';
@@ -149,11 +157,8 @@ export default function Home() {
     {
       key: 'move',
       icon: 'fitness',
-      title: hi ? 'मूव: 15 मिनट' : 'Move: 15 minutes',
-      sub:
-        phase === 'unknown'
-          ? hi ? 'हल्का, किसी भी दिन के लिए' : 'Gentle, safe for any cycle day'
-          : hi ? `${phaseInfo.title} के हिसाब से` : `Matched to your ${phaseInfo.title.toLowerCase()} phase`,
+      title: hi ? `मूव: ${todayMove.minutes} मिनट` : `Move: ${todayMove.minutes} minutes`,
+      sub: hi ? `${todayMove.title.hi} · ~${todayMove.kcal} kcal` : `${todayMove.title.en} · ~${todayMove.kcal} kcal`,
       href: '/move?start=1',
       done: exerciseLogs.some((l) => l.completed && isToday(l.date)),
       fg: '#2A8F6A',

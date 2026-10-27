@@ -59,6 +59,24 @@ export type SkinLog = { date: string; facialHair: number; hairFall: number; acne
 export type MindCheck = { date: string; phq2: number; gad2: number };
 export type LhTest = { date: string; result: 'neg' | 'pos' };
 export type PlateScan = { date: string; score: number; label: string };
+export type WorkoutEntry = {
+  date: string;
+  key: string;
+  title: string;
+  focus: string;
+  minutes: number;
+  kcal: number;
+  programId?: string;
+  sessionKey?: string;
+  rating?: 'easy' | 'right' | 'hard';
+};
+export type MoveSettings = {
+  level: 1 | 2 | 3;
+  minutes: number;
+  equipment: ('dumbbell' | 'band')[];
+  lowImpact: boolean;
+};
+export type ActiveProgram = { id: string; startedAt: string; done: string[] } | null;
 export type TtcState = { on: boolean; since: string | null; lhTests: LhTest[] };
 
 export type CommunityPost = {
@@ -140,6 +158,13 @@ type AppState = {
   ttc: TtcState;
   setTtc: (patch: Partial<TtcState>) => void;
   logLh: (test: LhTest) => void;
+  moveSettings: MoveSettings;
+  setMoveSettings: (patch: Partial<MoveSettings>) => void;
+  activeProgram: ActiveProgram;
+  startProgram: (id: string | null) => void;
+  workoutHistory: WorkoutEntry[];
+  recordWorkout: (entry: WorkoutEntry) => void;
+  rateWorkout: (rating: 'easy' | 'right' | 'hard') => void;
   plateScans: PlateScan[];
   addPlateScan: (scan: PlateScan) => void;
   hiddenPostIds: string[];
@@ -433,6 +458,31 @@ export const useAppStore = create<AppState>()(
       setTtc: (patch) => set({ ttc: { ...get().ttc, ...patch } }),
       logLh: (test) =>
         set({ ttc: { ...get().ttc, lhTests: [...get().ttc.lhTests.filter((t) => t.date !== test.date), test].slice(-120) } }),
+      moveSettings: { level: 1, minutes: 15, equipment: [], lowImpact: false },
+      setMoveSettings: (patch) => set({ moveSettings: { ...get().moveSettings, ...patch } }),
+      activeProgram: null,
+      startProgram: (id) => set({ activeProgram: id ? { id, startedAt: new Date().toISOString(), done: [] } : null }),
+      workoutHistory: [],
+      recordWorkout: (entry) => {
+        const ap = get().activeProgram;
+        const nextProgram =
+          ap && entry.programId === ap.id && entry.sessionKey && !ap.done.includes(entry.sessionKey)
+            ? { ...ap, done: [...ap.done, entry.sessionKey] }
+            : ap;
+        set({ workoutHistory: [...get().workoutHistory, entry].slice(-300), activeProgram: nextProgram });
+        get().completeExercise(entry.key, entry.minutes);
+      },
+      rateWorkout: (rating) => {
+        const hist = [...get().workoutHistory];
+        if (!hist.length) return;
+        hist[hist.length - 1] = { ...hist[hist.length - 1], rating };
+        const ms = get().moveSettings;
+        const recent = hist.slice(-2).map((h) => h.rating);
+        let level = ms.level;
+        if (rating === 'hard' && level > 1) level = (level - 1) as 1 | 2 | 3;
+        if (rating === 'easy' && recent.every((r) => r === 'easy') && level < 3) level = (level + 1) as 1 | 2 | 3;
+        set({ workoutHistory: hist, moveSettings: { ...ms, level } });
+      },
       plateScans: [],
       addPlateScan: (scan) => set({ plateScans: [...get().plateScans, scan].slice(-200) }),
       hiddenPostIds: [],
@@ -688,6 +738,9 @@ export const useAppStore = create<AppState>()(
         programStart: s.programStart,
         ttc: s.ttc,
         plateScans: s.plateScans,
+        moveSettings: s.moveSettings,
+        activeProgram: s.activeProgram,
+        workoutHistory: s.workoutHistory,
         hiddenPostIds: s.hiddenPostIds,
         reportedIds: s.reportedIds,
         doctorKitExports: s.doctorKitExports,

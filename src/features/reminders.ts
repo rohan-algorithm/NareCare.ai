@@ -1,9 +1,9 @@
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
-import { getExercise, todaysExercises } from '@/src/content/exercises';
+import { buildWorkout } from '@/src/features/workoutEngine';
+import { boostFor, planToday } from '@/src/features/todayWorkout';
 import { nextLesson, programWeek } from '@/src/content/academy';
-import { getCycleDay, getCyclePhase } from '@/src/features/cycle';
 import { predictNextPeriod } from '@/src/features/insights';
 import { localDate, planForDate, prefsFrom } from '@/src/features/mealPlan';
 import type { ReminderPref } from '@/src/features/reminderDefaults';
@@ -85,7 +85,6 @@ function buildNudges(): Nudge[] {
   const now = Date.now();
   const prefs = prefsFrom(p);
   const seed = p?.name ?? 'naricare';
-  const cycleDay = getCycleDay(s.symptomLogs);
   const loggedToday = s.symptomLogs.some((l) => l.logDate === today);
   const movedToday = s.exerciseLogs.some((e) => e.completed && e.date.slice(0, 10) === today);
   const ateToday = Object.entries(s.mealMarks).some(([k, v]) => k.startsWith(`${today}|`) && v === 'ate');
@@ -97,10 +96,10 @@ function buildNudges(): Nudge[] {
     const date = addDays(today, d);
     const isToday = d === 0;
     const plan = planForDate(prefs, date, seed, s.mealSwaps);
-    const dayCycle = cycleDay ? cycleDay + d : null;
-    const phase = getCyclePhase(dayCycle);
     const [y, m, dd] = date.split('-').map(Number);
-    const routine = todaysExercises(phase, new Date(y, m - 1, dd).getDay())[0] ?? getExercise('calm_breathe');
+    const session = planToday(s.moveSettings, s.activeProgram, isToday ? s.symptomLogs : []);
+    const daySeed = isToday ? session.seed : `${session.seed}|${date}`;
+    const routine = buildWorkout(session.focus, { ...s.moveSettings, minutes: session.minutes, lowImpact: session.lowImpact }, daySeed, boostFor(session.week));
 
     for (const r of s.reminders.filter((x) => x.enabled)) {
       if (isToday && s.scheduleDone[r.key]) continue;
@@ -137,7 +136,7 @@ function buildNudges(): Nudge[] {
         if (isToday && movedToday) continue;
         out.push({
           at: when,
-          title: hi ? `🧘 ${routine?.nameHi ?? 'आज का मूव'} · ${routine?.durationMin ?? 15} मिनट` : `🧘 ${routine?.name ?? 'Today’s move'} · ${routine?.durationMin ?? 15} min`,
+          title: hi ? `💪 ${routine.title.hi} · ${routine.minutes} मिनट` : `💪 ${routine.title.en} · ${routine.minutes} min`,
           body: rotate(
             hi
               ? ['टाइमर और आवाज़ तैयार है। बस शुरू करें।', 'जिम नहीं, सिर्फ़ चटाई। अभी 15 मिनट।', 'छोटा सेशन > छूटा सेशन।']
