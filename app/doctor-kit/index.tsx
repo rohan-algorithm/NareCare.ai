@@ -1,4 +1,6 @@
 import { Stack } from 'expo-router';
+import { useState } from 'react';
+import { shareDoctorKitPdf } from '@/src/features/doctorKitPdf';
 import { Alert, Share, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
@@ -18,6 +20,10 @@ export default function DoctorKit() {
   const profile = useAppStore((s) => s.profile);
   const logs = useAppStore((s) => s.symptomLogs);
   const mealMarks = useAppStore((s) => s.mealMarks);
+  const exerciseLogs = useAppStore((s) => s.exerciseLogs);
+  const labAnalyses = useAppStore((s) => s.labAnalyses);
+  const noteDoctorKitExport = useAppStore((s) => s.noteDoctorKitExport);
+  const [pdfBusy, setPdfBusy] = useState(false);
   const lang = profile?.language ?? 'en';
   const pulse = computeProgressPulse(logs, lang);
   const cycleDay = getCycleDay(logs);
@@ -47,11 +53,34 @@ export default function DoctorKit() {
     ...CONSULT_QUESTIONS.map((q, i) => `${i + 1}. ${lang === 'hi' ? q.hi : q.en}`),
   ].join('\n');
 
-  const share = async () => {
+  const sharePdf = async () => {
+    setPdfBusy(true);
     try {
-      await Share.share({ message: summaryText, title: 'NariCare Doctor Visit Kit' });
+      await shareDoctorKitPdf({
+        name: profile?.name ?? '—',
+        age: profile?.age,
+        focus: phenotypeLabel(profile?.phenotype ?? 'mixed'),
+        cycle: cycleDay ? `Day ${cycleDay} (${phase})` : 'Not enough period logs',
+        bleed: recentBleed || '—',
+        pulse,
+        logs,
+        crashDays,
+        adherence,
+        moves: exerciseLogs,
+        livingContext: profile?.livingContext?.replaceAll('_', ' ') ?? '—',
+        lab: labAnalyses[0],
+        questions: [...(labAnalyses[0]?.doctorQuestions ?? []).slice(0, 3), ...CONSULT_QUESTIONS.slice(0, 5).map((q) => q.en)],
+      });
+      noteDoctorKitExport();
     } catch {
-      Alert.alert('Could not share', 'Copy from this screen at your appointment.');
+      try {
+        await Share.share({ message: summaryText, title: 'NariCare Doctor Visit Kit' });
+        noteDoctorKitExport();
+      } catch {
+        Alert.alert('Could not share', 'Show this screen at your appointment.');
+      }
+    } finally {
+      setPdfBusy(false);
     }
   };
 
@@ -117,8 +146,9 @@ export default function DoctorKit() {
         </View>
 
         <Button
-          label={lang === 'hi' ? 'शेयर / सेव करें' : 'Share visit summary'}
-          onPress={share}
+          label={pdfBusy ? (lang === 'hi' ? 'PDF बन रहा है…' : 'Making PDF…') : lang === 'hi' ? 'PDF बनाएँ और शेयर करें' : 'Create & share PDF'}
+          onPress={sharePdf}
+          disabled={pdfBusy}
           style={{ marginTop: spacing.md }}
         />
         <Muted style={{ marginTop: spacing.md, textAlign: 'center' }}>

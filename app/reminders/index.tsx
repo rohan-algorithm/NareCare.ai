@@ -30,11 +30,15 @@ export default function Reminders() {
     try {
       const { scheduleReminders } = await import('@/src/features/reminders');
       const n = await scheduleReminders(reminders);
-      setAlarmsArmed(true);
+      setAlarmsArmed(n > 0);
       setStatus(
-        lang === 'hi'
-          ? `${n} डेली अलार्म शेड्यूल · एक्सरसाइज़ अलार्म Move खोलेगा`
-          : `${n} daily alarms scheduled · exercise alarm opens Move`,
+        n > 0
+          ? lang === 'hi'
+            ? `अगले 7 दिनों के ${n} स्मार्ट रिमाइंडर तैयार`
+            : `${n} smart reminders set for the next 7 days`
+          : lang === 'hi'
+            ? 'सेटिंग्स में नोटिफिकेशन चालू करें'
+            : 'Turn on notifications for NariCare in Settings',
       );
     } catch (e: any) {
       setStatus(e?.message ?? 'Could not schedule — use a dev build for push');
@@ -47,7 +51,7 @@ export default function Reminders() {
     try {
       const { sendTestReminder } = await import('@/src/features/reminders');
       await sendTestReminder();
-      Alert.alert('Sent', lang === 'hi' ? '~2 सेकंड में टेस्ट' : 'Test notification in ~2 seconds');
+      Alert.alert('Sent', lang === 'hi' ? '~3 सेकंड में टेस्ट' : 'Test notification in ~3 seconds');
     } catch (e: any) {
       Alert.alert('Notifications', e?.message ?? 'Allow notifications or use a development build.');
     }

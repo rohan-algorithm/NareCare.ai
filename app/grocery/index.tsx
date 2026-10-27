@@ -15,7 +15,8 @@ export default function Grocery() {
   const profile = useAppStore((s) => s.profile);
   const lang = profile?.language ?? 'en';
   const ctx = profile?.livingContext ?? 'family_kitchen';
-  const list = useMemo(() => buildGroceryList(ctx, 7), [ctx]);
+  const mealSwaps = useAppStore((s) => s.mealSwaps);
+  const list = useMemo(() => buildGroceryList(profile, mealSwaps, 7), [profile, mealSwaps]);
   const [checked, setChecked] = useState<Record<string, boolean>>({});
 
   const toggle = (item: string) => setChecked((c) => ({ ...c, [item]: !c[item] }));

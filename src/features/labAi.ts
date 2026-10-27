@@ -52,8 +52,13 @@ export function analyzeLabValues(
   if (lows.length) parts.push(`${lows.length} low (${lows.map((l) => l.name).join(', ')})`);
   if (!parts.length) parts.push('Most markers in typical range — keep lifestyle steady and recheck as advised');
 
-  const summaryEn = `AI lab read: ${parts.join('; ')}. Pattern leans ${phenotypeHint}. This is not a diagnosis — bring Doctor Visit Kit to your clinician.`;
-  const summaryHi = `AI लैब रीड: कुछ मार्कर ध्यान देने योग्य हो सकते हैं। पैटर्न ~${phenotypeHint} लगता है। यह निदान नहीं है — डॉक्टर से ज़रूर चर्चा करें।`;
+  const focusEn = { metabolic: 'insulin and blood sugar', androgenic: 'androgens (skin, hair, cycle)', inflammatory: 'inflammation and sleep', mixed: 'a balanced routine' }[phenotypeHint];
+  const focusHi = { metabolic: 'इंसुलिन और ब्लड शुगर', androgenic: 'एंड्रोजन (त्वचा, बाल, साइकल)', inflammatory: 'सूजन और नींद', mixed: 'संतुलित रूटीन' }[phenotypeHint];
+  const flagged = highs.length + lows.length;
+  const summaryEn = `${parts.join('; ')}. Suggested focus for your plan: ${focusEn}. This is not a diagnosis; take these numbers to your doctor.`;
+  const summaryHi = flagged
+    ? `${flagged} मार्कर ध्यान देने लायक हैं। आपके प्लान का सुझाया फोकस: ${focusHi}। यह निदान नहीं है; ये नंबर डॉक्टर को दिखाएँ।`
+    : `ज़्यादातर मार्कर सामान्य दायरे में हैं। सुझाया फोकस: ${focusHi}। यह निदान नहीं है; डॉक्टर से चर्चा करें।`;
 
   const doctorQuestions = [
     'Do I need HOMA-IR / free testosterone / SHBG with this panel?',

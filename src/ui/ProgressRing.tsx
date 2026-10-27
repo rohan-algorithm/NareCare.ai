@@ -10,6 +10,7 @@ type Props = {
   label?: string;
   trackColor?: string;
   progressColor?: string;
+  centerText?: string;
 };
 
 export function ProgressRing({
@@ -19,6 +20,7 @@ export function ProgressRing({
   label,
   trackColor = 'rgba(255,255,255,0.16)',
   progressColor = colors.blush,
+  centerText,
 }: Props) {
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
@@ -51,7 +53,7 @@ export function ProgressRing({
         />
       </Svg>
       <View style={styles.center}>
-        <Text style={styles.value}>{Math.round(clamped)}</Text>
+        <Text style={styles.value}>{centerText ?? Math.round(clamped)}</Text>
         {label ? <Text style={styles.label}>{label}</Text> : null}
       </View>
     </View>

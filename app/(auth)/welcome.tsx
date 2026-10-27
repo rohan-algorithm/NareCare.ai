@@ -24,28 +24,28 @@ const { width, height } = Dimensions.get('window');
 
 const SLIDES = [
   {
-    kicker: 'What NariCare is',
-    kickerHi: 'NariCare क्या है',
-    title: 'Daily PCOS care\nthat fits India',
-    titleHi: 'रोज़ की PCOS केयर\nभारत के हिसाब से',
-    body: 'Eat better for your kitchen. Move gently. Track symptoms. Ask when stuck — in English or Hindi.',
-    bodyHi: 'आपकी रसोई के हिसाब से खाएँ। नरमी से मूव। लक्षण ट्रैक। अटकें तो पूछें — अंग्रेज़ी या हिंदी।',
+    kicker: 'Made for Indian PCOS',
+    kickerHi: 'भारतीय PCOS के लिए',
+    title: 'Daily habits for\nyour PCOS.',
+    titleHi: 'आपके PCOS के लिए\nरोज़ की आदतें।',
+    body: 'A daily plan built around dal-roti, mess thalis and tiffins, not quinoa bowls. About 5 minutes a day.',
+    bodyHi: 'दाल-रोटी, मेस थाली और टिफ़िन के हिसाब से प्लान, क्विनोआ नहीं। रोज़ ~5 मिनट।',
   },
   {
-    kicker: 'Four doors',
-    kickerHi: 'चार दरवाज़े',
-    title: 'Eat · Move ·\nTrack · You',
-    titleHi: 'खाएँ · मूव ·\nट्रैक · आप',
-    body: 'Home = today’s one job + Ask. Tabs cover Eat, Move, Track. Labs and Council live under You.',
-    bodyHi: 'होम = आज का एक काम + पूछें। टैब: खाएँ, मूव, ट्रैक। लैब और परिषद आप में।',
+    kicker: 'Understand your reports',
+    kickerHi: 'अपनी रिपोर्ट समझें',
+    title: 'Snap your lab report.\nGet it in plain Hindi.',
+    titleHi: 'रिपोर्ट की फोटो लें।\nसरल हिंदी में समझें।',
+    body: 'LH:FSH, insulin, testosterone, thyroid, Vitamin D, explained simply, with questions for your doctor.',
+    bodyHi: 'LH:FSH, इंसुलिन, टेस्टोस्टेरोन, थायरॉइड, विटामिन D: सरल भाषा में, डॉक्टर के सवालों के साथ।',
   },
   {
-    kicker: 'Start simple',
-    kickerHi: 'सिंपल शुरू',
-    title: 'One job today.\nAlarms that open Move.',
-    titleHi: 'आज एक काम।\nअलार्म → मूव शुरू।',
-    body: 'No dashboard clutter. Soft day when you need it. Weekly review when you want proof.',
-    bodyHi: 'कोई डैशबोर्ड नहीं। ज़रूरत हो तो Soft day। सबूत के लिए साप्ताहिक समीक्षा।',
+    kicker: 'See it working',
+    kickerHi: 'असर देखें',
+    title: 'Weekly proof.\nA doctor-ready PDF.',
+    titleHi: 'हर हफ्ते सबूत।\nडॉक्टर के लिए PDF।',
+    body: 'Your AI coach tracks what is working, and turns 8 weeks of data into one page for your gynae.',
+    bodyHi: 'AI कोच बताता है क्या काम कर रहा है, और 8 हफ्तों का डेटा गाइनी के लिए एक पेज में।',
   },
 ];
 
@@ -75,6 +75,11 @@ export default function Welcome() {
   const skipSignup = () => {
     skipSignupDemo();
     router.replace('/home');
+  };
+
+  const freeDecode = () => {
+    completeWelcome();
+    router.push('/labs');
   };
 
   return (
@@ -131,10 +136,11 @@ export default function Welcome() {
           onPress={next}
         />
         <Button
-          label="Skip signup — demo · साइनअप छोड़ें"
-          variant="ghost"
-          onPress={skipSignup}
+          label="Decode my lab report free · रिपोर्ट मुफ़्त समझें"
+          variant="secondary"
+          onPress={freeDecode}
         />
+        {__DEV__ ? <Button label="Dev: skip to demo" variant="ghost" onPress={skipSignup} /> : null}
         <Muted style={{ textAlign: 'center' }}>
           Educational companion · शैक्षिक साथी · Not a diagnosis
         </Muted>

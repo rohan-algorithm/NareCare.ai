@@ -32,7 +32,7 @@ export function phenotypeLabel(p: Phenotype, lang: 'en' | 'hi' = 'en'): string {
     metabolic: { en: 'Metabolic focus', hi: 'मेटाबॉलिक फोकस' },
     androgenic: { en: 'Androgen focus', hi: 'एंड्रोजन फोकस' },
     inflammatory: { en: 'Inflammation focus', hi: 'सूजन फोकस' },
-    mixed: { en: 'Mixed pattern', hi: 'मिश्रित पैटर्न' },
+    mixed: { en: 'Balanced focus', hi: 'संतुलित फोकस' },
   };
   return map[p][lang];
 }

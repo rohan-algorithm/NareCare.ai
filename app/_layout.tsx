@@ -15,6 +15,7 @@ import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
 import { colors } from '@/src/theme/tokens';
+import { useNudgeEngine } from '@/src/features/useNudgeEngine';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -33,6 +34,7 @@ export default function RootLayout() {
     PlusJakartaSans_700Bold,
   });
   const [ready, setReady] = useState(false);
+  useNudgeEngine();
 
   useEffect(() => {
     if (fontsLoaded || fontError) {

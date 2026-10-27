@@ -103,3 +103,18 @@ export const mealSlotAccent = {
   evening: { bg: '#EEF0FF', ink: '#4A4F8A', bar: '#6B72C4' },
   dinner: { bg: '#E8F2ED', ink: '#244A3F', bar: '#244A3F' },
 } as const;
+
+export const gradients = {
+  hero: ['#FF8A7A', '#E24B5A', '#9B3A74'],
+  forest: ['#35524A', '#22332E'],
+  ai: ['#7C5CFF', '#E24B5A'],
+  soft: ['#FFFFFF', '#FFF3F0'],
+} as const;
+
+export const shadowCard = {
+  shadowColor: '#3A1F2B',
+  shadowOffset: { width: 0, height: 10 },
+  shadowOpacity: 0.1,
+  shadowRadius: 22,
+  elevation: 5,
+} as const;

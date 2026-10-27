@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 
 import { colors } from '@/src/theme/tokens';
+import { refreshEntitlement } from '@/src/features/billing';
 import { isSubscriptionActive, useAppStore } from '@/src/store/useAppStore';
 
 export default function Gate() {
@@ -12,7 +13,14 @@ export default function Gate() {
   const isAuthenticated = useAppStore((s) => s.isAuthenticated);
   const profile = useAppStore((s) => s.profile);
   const subscription = useAppStore((s) => s.subscription);
+  const applyEntitlement = useAppStore((s) => s.applyEntitlement);
   const [bootDone, setBootDone] = useState(false);
+
+  useEffect(() => {
+    refreshEntitlement()
+      .then((e) => e && applyEntitlement(e))
+      .catch(() => undefined);
+  }, [applyEntitlement]);
 
   useEffect(() => {
     const finish = () => setHydrated(true);

@@ -24,7 +24,11 @@
         "VIBRATE",
         "POST_NOTIFICATIONS"
       ],
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "blockedPermissions": [
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -50,7 +54,16 @@
           "color": "#244A3F"
         }
       ],
-      "expo-image"
+      "expo-image",
+      "expo-sharing",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "NariCare reads your lab report photo to explain it in plain language.",
+          "cameraPermission": "NariCare uses the camera to scan your lab report.",
+          "microphonePermission": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

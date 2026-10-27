@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Ionicons } from '@/src/ui/Icon';
+import { postViolation, reportContent, type ReportReason } from '@/src/features/moderation';
 import { Stack } from 'expo-router';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
@@ -17,6 +19,8 @@ export default function Community() {
   const addPost = useAppStore((s) => s.addPost);
   const toggleUpvote = useAppStore((s) => s.toggleUpvote);
   const addComment = useAppStore((s) => s.addComment);
+  const hiddenPostIds = useAppStore((s) => s.hiddenPostIds);
+  const hidePost = useAppStore((s) => s.hidePost);
   const lang = useAppStore((s) => s.profile?.language ?? 'en');
   const hi = lang === 'hi';
 
@@ -29,7 +33,30 @@ export default function Community() {
   const [commentDraft, setCommentDraft] = useState<Record<string, string>>({});
   const [openId, setOpenId] = useState<string | null>(null);
 
-  const filtered = cat === 'all' ? posts : posts.filter((p) => p.category === cat);
+  const visible = posts.filter((p) => !hiddenPostIds.includes(p.id));
+  const filtered = cat === 'all' ? visible : visible.filter((p) => p.category === cat);
+
+  const sendReport = (id: string, text: string, reason: ReportReason) => {
+    void reportContent('post', id, text, reason);
+    hidePost(id);
+    Alert.alert(hi ? 'धन्यवाद' : 'Thank you', hi ? 'यह पोस्ट आपके लिए छिपा दी गई और मॉडरेटर को भेज दी गई।' : 'The post is hidden for you and sent to our moderators.');
+  };
+
+  const postMenu = (id: string, text: string) => {
+    Alert.alert(hi ? 'इस पोस्ट के साथ' : 'This post', undefined, [
+      {
+        text: hi ? 'रिपोर्ट करें' : 'Report',
+        onPress: () =>
+          Alert.alert(hi ? 'क्या गलत है?' : 'What’s wrong?', undefined, [
+            { text: hi ? 'नुकसानदेह सेहत सलाह' : 'Harmful health advice', onPress: () => sendReport(id, text, 'harmful_health') },
+            { text: hi ? 'अपमान / नफ़रत' : 'Harassment or hate', onPress: () => sendReport(id, text, 'harassment') },
+            { text: hi ? 'स्पैम / बिक्री' : 'Spam or selling', onPress: () => sendReport(id, text, 'spam') },
+          ]),
+      },
+      { text: hi ? 'मेरे लिए छिपाएँ' : 'Hide for me', onPress: () => hidePost(id) },
+      { text: hi ? 'रद्द' : 'Cancel', style: 'cancel' },
+    ]);
+  };
 
   const catLabel = (id: string) => {
     const map: Record<string, [string, string]> = {
@@ -44,6 +71,16 @@ export default function Community() {
 
   const publish = () => {
     if (!title.trim() || !body.trim()) return;
+    const v = postViolation(`${title} ${body}`);
+    if (v) {
+      Alert.alert(
+        hi ? 'यह पोस्ट नहीं हो सकता' : 'Can’t post this',
+        v === 'phone'
+          ? hi ? 'अपनी सुरक्षा के लिए फ़ोन नंबर शेयर न करें।' : 'For your safety, don’t share phone numbers.'
+          : hi ? 'लिंक की अनुमति नहीं है।' : 'Links aren’t allowed in the community.',
+      );
+      return;
+    }
     addPost({ category: newCat, title: title.trim(), body: body.trim(), isAnonymous: anonymous });
     setTitle('');
     setBody('');
@@ -123,6 +160,11 @@ export default function Community() {
               </View>
               <Muted>{hi ? 'अनाम पोस्ट' : 'Post anonymously'}</Muted>
             </Pressable>
+            <Muted style={{ marginTop: spacing.sm, fontSize: 12 }}>
+              {hi
+                ? 'नियम: दया रखें, दवा की खुराक न बताएँ, कुछ न बेचें, फ़ोन नंबर/लिंक नहीं। उल्लंघन हटाए जाते हैं।'
+                : 'Rules: be kind, no medicine doses, no selling, no phone numbers or links. Violations are removed.'}
+            </Muted>
             <Button
               label={hi ? 'पब्लिश' : 'Publish'}
               onPress={publish}
@@ -170,6 +212,9 @@ export default function Community() {
         {filtered.map((p, i) => (
           <Animated.View key={p.id} entering={FadeInDown.delay(40 * i).duration(350)}>
             <Card tone="solid" style={{ marginTop: spacing.md }}>
+              <Pressable onPress={() => postMenu(p.id, `${p.title}\n${p.body}`)} hitSlop={12} style={styles.more}>
+                <Ionicons name="ellipsis-horizontal" size={18} color={colors.muted} />
+              </Pressable>
               <Muted>
                 {p.isAnonymous
                   ? hi
@@ -241,6 +286,7 @@ export default function Community() {
 }
 
 const styles = StyleSheet.create({
+  more: { position: 'absolute', top: 12, right: 12, zIndex: 2, padding: 4 },
   wrap: { flexDirection: 'row', flexWrap: 'wrap' },
   input: {
     marginTop: spacing.sm,

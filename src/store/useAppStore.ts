@@ -4,7 +4,10 @@ import { createJSONStorage, persist, StateStorage } from 'zustand/middleware';
 import { format } from 'date-fns';
 
 import { derivePhenotype } from '@/src/features/phenotype';
-import { coachReply, type ChatMessage } from '@/src/features/aiCoach';
+import { type ChatMessage } from '@/src/features/aiCoach';
+import { askCoach } from '@/src/features/aiClient';
+import { buildAiContext } from '@/src/features/aiContext';
+import type { Entitlement } from '@/src/features/billing';
 import { analyzeLabValues, type LabAnalysis } from '@/src/features/labAi';
 import { DEFAULT_REMINDERS, type ReminderPref } from '@/src/features/reminderDefaults';
 import type {
@@ -108,16 +111,28 @@ type AppState = {
   updateSetupDraft: (patch: Partial<UserProfile> & { step?: number }) => void;
   finishSetup: () => void;
   startTrial: (plan: PlanType) => void;
+  applyEntitlement: (e: Entitlement) => void;
+  freeDecodeUsed: boolean;
+  doctorKitExports: number;
+  noteDoctorKitExport: () => void;
   upsertSymptomLog: (log: Omit<SymptomLog, 'id'> & { id?: string }) => void;
   toggleHabit: (key: 'focus' | 'move') => void;
   markMeal: (mealKey: string, status: 'ate' | 'swapped' | 'skipped') => void;
+  mealSwaps: Record<string, string>;
+  hiddenPostIds: string[];
+  hidePost: (id: string) => void;
+  reportedIds: string[];
+  markReported: (id: string) => void;
+  swapMeal: (date: string, slot: string, mealId: string) => void;
+  updateFoodPrefs: (patch: Partial<Pick<UserProfile, 'dietPreference' | 'cuisinePreference' | 'allergies' | 'dislikes' | 'livingContext'>>) => void;
   setLivingContext: (ctx: LivingContext) => void;
   setLanguage: (lang: 'en' | 'hi') => void;
   addWater: () => void;
   resetWaterIfNeeded: () => void;
   resetHabitsIfNeeded: () => void;
   completeExercise: (exerciseId: string, durationMin: number) => void;
-  sendChat: (text: string) => void;
+  chatBusy: boolean;
+  sendChat: (text: string) => Promise<void>;
   clearChat: () => void;
   saveLabAnalysis: (values: Record<string, number>) => LabAnalysis;
   setReminderEnabled: (key: string, enabled: boolean) => void;
@@ -336,8 +351,28 @@ export const useAppStore = create<AppState>()(
             planType: plan,
             status: 'trial',
             trialEndsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+            startedAt: new Date().toISOString(),
           },
         }),
+      applyEntitlement: (e) => {
+        const prev = get().subscription;
+        if (!e.active) {
+          const wasPaying = prev.status === 'active' || prev.status === 'trial';
+          set({ subscription: { ...prev, status: wasPaying ? 'expired' : prev.status, trialEndsAt: null } });
+          return;
+        }
+        set({
+          subscription: {
+            planType: e.plan ?? prev.planType,
+            status: e.isTrial ? 'trial' : 'active',
+            trialEndsAt: e.isTrial ? e.expiresAt : null,
+            startedAt: prev.startedAt ?? new Date().toISOString(),
+          },
+        });
+      },
+      freeDecodeUsed: false,
+      doctorKitExports: 0,
+      noteDoctorKitExport: () => set({ doctorKitExports: get().doctorKitExports + 1 }),
       upsertSymptomLog: (log) => {
         const id = log.id ?? `${log.logDate}`;
         const next = get().symptomLogs.filter((l) => l.logDate !== log.logDate);
@@ -354,6 +389,21 @@ export const useAppStore = create<AppState>()(
       },
       markMeal: (mealKey, status) =>
         set({ mealMarks: { ...get().mealMarks, [mealKey]: status } }),
+      mealSwaps: {},
+      hiddenPostIds: [],
+      hidePost: (id) => set({ hiddenPostIds: [...new Set([...get().hiddenPostIds, id])] }),
+      reportedIds: [],
+      markReported: (id) => set({ reportedIds: [...new Set([...get().reportedIds, id])].slice(-200) }),
+      swapMeal: (date, slot, mealId) => {
+        const cutoff = new Date(Date.now() - 14 * 864e5).toISOString().slice(0, 10);
+        const kept = Object.fromEntries(Object.entries(get().mealSwaps).filter(([k]) => k.slice(0, 10) >= cutoff));
+        set({ mealSwaps: { ...kept, [`${date}|${slot}`]: mealId } });
+      },
+      updateFoodPrefs: (patch) => {
+        const profile = get().profile;
+        if (!profile) return;
+        set({ profile: { ...profile, ...patch }, mealSwaps: {} });
+      },
       setLivingContext: (ctx) => {
         const profile = get().profile;
         if (!profile) return;
@@ -392,20 +442,25 @@ export const useAppStore = create<AppState>()(
           streakDays: Math.min(30, (get().streakDays || 0) + 1),
         });
       },
-      sendChat: (text) => {
+      chatBusy: false,
+      sendChat: async (text) => {
+        if (get().chatBusy) return;
+        const history = get().chat;
         const userMsg: ChatMessage = {
           id: `u-${Date.now()}`,
           role: 'user',
           text,
           createdAt: new Date().toISOString(),
         };
+        set({ chat: [...history, userMsg], chatBusy: true });
+        const replyText = await askCoach(text, get().profile, history, buildAiContext(get()));
         const reply: ChatMessage = {
           id: `a-${Date.now()}`,
           role: 'assistant',
-          text: coachReply(text, get().profile),
+          text: replyText,
           createdAt: new Date().toISOString(),
         };
-        set({ chat: [...get().chat, userMsg, reply] });
+        set({ chat: [...get().chat, reply], chatBusy: false });
       },
       clearChat: () =>
         set({
@@ -420,7 +475,7 @@ export const useAppStore = create<AppState>()(
         }),
       saveLabAnalysis: (values) => {
         const analysis = analyzeLabValues(values, get().profile?.phenotype);
-        set({ labAnalyses: [analysis, ...get().labAnalyses].slice(0, 20) });
+        set({ labAnalyses: [analysis, ...get().labAnalyses].slice(0, 20), freeDecodeUsed: true });
         return analysis;
       },
       setReminderEnabled: (key, enabled) =>
@@ -578,6 +633,11 @@ export const useAppStore = create<AppState>()(
         scheduleDoneDate: s.scheduleDoneDate,
         scheduleDone: s.scheduleDone,
         alarmsArmed: s.alarmsArmed,
+        freeDecodeUsed: s.freeDecodeUsed,
+        mealSwaps: s.mealSwaps,
+        hiddenPostIds: s.hiddenPostIds,
+        reportedIds: s.reportedIds,
+        doctorKitExports: s.doctorKitExports,
       }),
     }
   )

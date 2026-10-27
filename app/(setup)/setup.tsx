@@ -52,7 +52,7 @@ export default function Setup() {
   };
 
   const canContinue = () => {
-    if (step === 0) return Boolean((draft.name ?? '').trim()) && (draft.age ?? 0) >= 13;
+    if (step === 0) return Boolean((draft.name ?? '').trim()) && (draft.age ?? 0) >= 18;
     if (step === 1) return (draft.symptoms?.length ?? 0) > 0;
     if (step === 2) return Boolean(draft.livingContext) && Boolean(draft.dietPreference);
     if (step === 3) return (draft.goals?.length ?? 0) > 0;
@@ -218,6 +218,7 @@ export default function Setup() {
                 ['eggetarian', 'Eggetarian', 'अंडाशाकाहारी'],
                 ['non_veg', 'Non-veg', 'मांसाहारी'],
                 ['vegan', 'Vegan', 'वीगन'],
+                ['jain', 'Jain', 'जैन'],
               ] as [DietPreference, string, string][]
             ).map(([id, en, hiL]) => (
               <Chip
@@ -319,8 +320,8 @@ export default function Setup() {
         <Muted style={{ marginTop: spacing.md }}>
           {step === 0
             ? hi
-              ? 'नाम और उम्र (13+) जोड़ें।'
-              : 'Add your name and age (13+) to continue.'
+              ? 'नाम और उम्र (18+) जोड़ें। NariCare 18+ के लिए है।'
+              : 'Add your name and age to continue. NariCare is for women 18+.'
             : step === 1
               ? hi
                 ? 'कम से कम एक लक्षण चुनें।'

@@ -1,24 +1,6 @@
-import { MEALS, NORTH_INDIAN_WEEK, resolveMealForContext } from '@/src/content/meals';
-import type { LivingContext } from '@/src/types';
-
-const INGREDIENT_MAP: Record<string, string[]> = {
-  moong_cheela: ['Moong dal', 'Pudina', 'Green chilli', 'Jeera'],
-  besan_cheela: ['Besan', 'Onion', 'Tomato', 'Coriander'],
-  sprout_chaat: ['Mixed sprouts', 'Lemon', 'Cucumber', 'Onion'],
-  egg_bhurji: ['Eggs', 'Onion', 'Tomato', 'Multigrain roti'],
-  paneer_bhurji: ['Paneer', 'Capsicum', 'Onion', 'Spices'],
-  curd_bowl: ['Dahi', 'Roasted chana', 'Cucumber'],
-  buttermilk: ['Chaas / buttermilk', 'Jeera', 'Mint'],
-  methi_paratha: ['Methi leaves / dried methi', 'Atta (multigrain)', 'Dahi'],
-  brown_rice_dal: ['Brown rice', 'Lauki', 'Toor/moong dal', 'Salad greens'],
-  millet_khichdi: ['Jowar / millets', 'Moong dal', 'Ghee', 'Jeera'],
-  rajma_salad: ['Rajma (cooked)', 'Onion', 'Tomato', 'Lemon'],
-  grilled_paneer: ['Paneer', 'Bell peppers', 'Yogurt marinade'],
-  veg_pulao_light: ['Rice (half portion)', 'Mixed veg', 'Raita ingredients'],
-  palak_soup: ['Palak', 'Garlic', 'Roasted seeds'],
-  fish_curry_light: ['Fish', 'Kokum/tamarind', 'Millets'],
-  evening_makhana: ['Makhana', 'Spearmint tea'],
-};
+import { localDate, planForDate, prefsFrom, SLOTS, weekDates } from '@/src/features/mealPlan';
+import { MEAL_LIBRARY } from '@/src/content/mealLibrary';
+import type { UserProfile } from '@/src/types';
 
 const PCOS_STAPLES = [
   'Flaxseeds',
@@ -30,19 +12,18 @@ const PCOS_STAPLES = [
   'Seasonal leafy greens',
 ];
 
-export function buildGroceryList(livingContext: LivingContext, days = 7): {
+export function buildGroceryList(profile: UserProfile | null, swaps: Record<string, string>, days = 7): {
   produce: string[];
   pantry: string[];
   staples: string[];
   tips: string[];
 } {
+  const prefs = prefsFrom(profile);
+  const livingContext = prefs.context;
   const set = new Set<string>();
-  for (let i = 0; i < Math.min(days, NORTH_INDIAN_WEEK.length); i++) {
-    const plan = NORTH_INDIAN_WEEK[i];
-    for (const slot of ['breakfast', 'midMorning', 'lunch', 'evening', 'dinner'] as const) {
-      const meal = resolveMealForContext(plan[slot], livingContext);
-      for (const ing of INGREDIENT_MAP[meal.id] ?? []) set.add(ing);
-    }
+  for (const date of weekDates(localDate(), days)) {
+    const plan = planForDate(prefs, date, profile?.name ?? 'naricare', swaps);
+    for (const slot of SLOTS) for (const ing of plan[slot]?.ingredients ?? []) set.add(ing);
   }
 
   const all = [...set];
@@ -66,5 +47,5 @@ export function buildGroceryList(livingContext: LivingContext, days = 7): {
 }
 
 export function mealCount(): number {
-  return Object.keys(MEALS).length;
+  return MEAL_LIBRARY.length;
 }

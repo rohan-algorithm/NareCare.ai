@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { useLocalSearchParams } from 'expo-router';
 import * as Haptics from 'expo-haptics';
@@ -27,6 +27,9 @@ import {
   weekPlanTitle,
 } from '@/src/features/moveStreak';
 import { speakCoach, speakSimple, stopCoachVoice } from '@/src/features/moveCoach';
+import { openMoveDemo, openRoutineVideo } from '@/src/features/videoDemo';
+import { demoForMove } from '@/src/content/exerciseDemos';
+import { Ionicons } from '@/src/ui/Icon';
 import type { Exercise, MoveStep } from '@/src/types';
 
 type Mode = 'hub' | 'week' | 'preview' | 'ready' | 'work' | 'rest' | 'done';
@@ -84,6 +87,7 @@ export default function Move() {
   const [skippedKind, setSkippedKind] = useState<string | null>(null);
   const [elapsedSec, setElapsedSec] = useState(0);
   const [voiceOn, setVoiceOn] = useState(true);
+  const [openSteps, setOpenSteps] = useState<number | null>(null);
   const finishing = useRef(false);
 
   const moves = session.moves;
@@ -128,7 +132,7 @@ export default function Move() {
 
   useEffect(() => {
     if (mode === 'done' && voiceOn) {
-      void speakSimple(hi ? 'सेशन पूरा। बहुत अच्छा।' : 'Session complete. Well done.', lang);
+      void speakSimple(hi ? 'सेशन पूरा। बहुत अच्छा।' : 'Session complete. Well done.', lang, 'Session complete. Well done.');
     }
     if (mode === 'hub' || mode === 'preview' || mode === 'week') stopCoachVoice();
   }, [mode, voiceOn, hi, lang]);
@@ -502,22 +506,57 @@ export default function Move() {
                 : 'Voice coach OFF · tap to enable'}
           </Text>
         </Pressable>
-        {moves.map((m, i) => (
-          <View key={`${m.name}-${i}`} style={styles.moveRow}>
-            <View style={styles.thumbWrap}>
-              <MoveGif move={m} compact style={styles.thumb} />
-              <View style={styles.moveNumOverlay}>
-                <Text style={styles.moveNumText}>{i + 1}</Text>
-              </View>
+        {moves.map((m, i) => {
+          const demo = demoForMove(m.name);
+          const open = openSteps === i;
+          return (
+            <View key={`${m.name}-${i}`} style={styles.moveCard}>
+              <Pressable onPress={() => setOpenSteps(open ? null : i)} style={styles.moveRowInner}>
+                <View style={styles.thumbWrap}>
+                  <MoveGif move={m} compact style={styles.thumb} />
+                  <View style={styles.moveNumOverlay}>
+                    <Text style={styles.moveNumText}>{i + 1}</Text>
+                  </View>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Title style={{ fontSize: 16 }}>{hi ? m.nameHi : m.name}</Title>
+                  <Muted style={{ marginTop: 2 }} numberOfLines={1}>
+                    {formatMoveDuration(m, lang)}
+                    {demo ? (hi ? ' · कैसे करें ▾' : ' · How to ▾') : ''}
+                  </Muted>
+                </View>
+                <Pressable onPress={() => void openMoveDemo(m.name, lang)} hitSlop={8} style={styles.demoBtn}>
+                  <Ionicons name="logo-youtube" size={16} color="#E62117" />
+                  <Text style={styles.demoBtnText}>{hi ? 'वीडियो' : 'Video'}</Text>
+                </Pressable>
+              </Pressable>
+              {open ? (
+                <View style={styles.stepsBox}>
+                  {demo ? (
+                    <MoveGif move={m} style={styles.stepsImg} />
+                  ) : null}
+                  {(demo?.steps ?? [hi ? m.cueHi : m.cue]).map((st, k) => (
+                    <View key={k} style={styles.stepRow}>
+                      <Text style={styles.stepNum}>{k + 1}</Text>
+                      <Text style={styles.stepText}>{st}</Text>
+                    </View>
+                  ))}
+                  {demo?.tips[0] ? <Text style={styles.stepTip}>💡 {demo.tips[0]}</Text> : null}
+                </View>
+              ) : null}
             </View>
-            <View style={{ flex: 1 }}>
-              <Title style={{ fontSize: 16 }}>{hi ? m.nameHi : m.name}</Title>
-              <Muted style={{ marginTop: 2 }} numberOfLines={1}>
-                {formatMoveDuration(m, lang)}
-              </Muted>
-            </View>
-          </View>
-        ))}
+          );
+        })}
+        <Pressable onPress={() => void openRoutineVideo(session.name, session.durationMin, lang)} style={styles.routineVideo}>
+          <Ionicons name="logo-youtube" size={20} color="#E62117" />
+          <Text style={styles.routineVideoText}>
+            {hi ? 'पूरा रूटीन वीडियो में देखें' : 'Follow along with a full video'}
+          </Text>
+          <Ionicons name="open-outline" size={16} color={colors.muted} />
+        </Pressable>
+        <Pressable onPress={() => void Linking.openURL('https://repdb.co')} hitSlop={6}>
+          <Text style={styles.credit}>Exercise data by RepDB (repdb.co)</Text>
+        </Pressable>
         <Button
           label={hi ? 'शुरू करें' : 'Start session'}
           onPress={() => startSession(session)}
@@ -686,12 +725,39 @@ export default function Move() {
               : `${completedMoves}/${moves.length}`}
         </Text>
         <Text style={styles.stageName}>{playerTitle}</Text>
+        {(mode === 'rest' ? nextMove : current) ? (
+          <Pressable
+            onPress={() => {
+              stopCoachVoice();
+              setPaused(true);
+              const m = mode === 'rest' ? nextMove : current;
+              if (m) void openMoveDemo(m.name, lang);
+            }}
+            style={styles.watchDemo}
+          >
+            <Ionicons name="play-circle" size={18} color="#fff" />
+            <Text style={styles.watchDemoText}>{hi ? 'वीडियो डेमो देखें' : 'Watch video demo'}</Text>
+          </Pressable>
+        ) : null}
         <Text style={styles.stageTimer}>{bigNumber}</Text>
         {!!coachLine && (
           <Text style={styles.coachLine} numberOfLines={3}>
             {coachLine}
           </Text>
         )}
+        {(() => {
+          const m = mode === 'rest' ? nextMove : current;
+          const steps = m ? demoForMove(m.name)?.steps.slice(0, 2) : undefined;
+          return steps?.length ? (
+            <View style={styles.playerSteps}>
+              {steps.map((st, k) => (
+                <Text key={k} style={styles.playerStep} numberOfLines={2}>
+                  {k + 1}. {st}
+                </Text>
+              ))}
+            </View>
+          ) : null;
+        })()}
         {paused && <Text style={styles.pausedTag}>{hi ? 'रुका हुआ' : 'Paused'}</Text>}
       </Animated.View>
 
@@ -763,6 +829,23 @@ export default function Move() {
 }
 
 const styles = StyleSheet.create({
+  moveCard: { backgroundColor: '#fff', borderRadius: 20, marginBottom: 10, overflow: 'hidden', borderWidth: 1, borderColor: colors.line },
+  moveRowInner: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 10 },
+  stepsBox: { paddingHorizontal: 14, paddingBottom: 14, gap: 8 },
+  stepsImg: { width: '100%', aspectRatio: 1.4, borderRadius: 16 },
+  stepRow: { flexDirection: 'row', gap: 10 },
+  stepNum: { width: 22, height: 22, borderRadius: 11, backgroundColor: colors.blushSoft, color: colors.blushDeep, textAlign: 'center', fontFamily: fonts.bodyBold, fontSize: 12, lineHeight: 22 },
+  stepText: { flex: 1, fontFamily: fonts.body, fontSize: 13.5, lineHeight: 20, color: colors.ink },
+  stepTip: { fontFamily: fonts.bodyMedium, fontSize: 12.5, lineHeight: 18, color: colors.teal, marginTop: 2 },
+  credit: { fontFamily: fonts.body, fontSize: 11, color: colors.muted, textAlign: 'center', marginTop: spacing.sm, textDecorationLine: 'underline' },
+  playerSteps: { marginTop: 10, paddingHorizontal: 24, gap: 4 },
+  playerStep: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18, color: 'rgba(255,255,255,0.8)', textAlign: 'center' },
+  demoBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#FFF0F0', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999 },
+  demoBtnText: { fontFamily: fonts.bodyBold, fontSize: 12, color: '#C4161C' },
+  routineVideo: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#fff', borderRadius: 16, padding: 14, marginTop: spacing.md, borderWidth: 1, borderColor: colors.line },
+  routineVideoText: { flex: 1, fontFamily: fonts.bodyBold, fontSize: 14, color: colors.ink },
+  watchDemo: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'center', backgroundColor: 'rgba(255,255,255,0.18)', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, marginTop: 8 },
+  watchDemoText: { fontFamily: fonts.bodyBold, fontSize: 13, color: '#fff' },
   streakToggle: { marginBottom: spacing.sm },
   linkMuted: { fontFamily: fonts.bodyMedium, color: colors.muted, fontSize: 13 },
   kindNote: {

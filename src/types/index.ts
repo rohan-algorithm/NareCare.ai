@@ -1,5 +1,5 @@
 export type DiagnosisStatus = 'diagnosed' | 'suspect' | 'unsure';
-export type DietPreference = 'vegetarian' | 'non_veg' | 'eggetarian' | 'vegan';
+export type DietPreference = 'vegetarian' | 'non_veg' | 'eggetarian' | 'vegan' | 'jain';
 export type CuisinePreference =
   | 'north_indian'
   | 'south_indian'
@@ -12,7 +12,7 @@ export type CyclePhase = 'follicular' | 'ovulation' | 'luteal' | 'unknown';
 export type PeriodStatus = 'started' | 'flowing' | 'spotting' | 'none';
 export type BleedPattern = 'light' | 'moderate' | 'heavy' | 'clots' | 'none';
 export type Language = 'en' | 'hi';
-export type PlanType = 'monthly' | 'annual';
+export type PlanType = 'monthly' | 'quarterly' | 'annual';
 export type SubStatus = 'active' | 'cancelled' | 'expired' | 'trial' | null;
 
 export type UserProfile = {
@@ -25,6 +25,7 @@ export type UserProfile = {
   symptoms: string[];
   dietPreference: DietPreference;
   allergies: string[];
+  dislikes?: string[];
   cuisinePreference: CuisinePreference;
   livingContext: LivingContext;
   goals: string[];
@@ -36,6 +37,7 @@ export type Subscription = {
   planType: PlanType;
   status: SubStatus;
   trialEndsAt: string | null;
+  startedAt?: string | null;
 };
 
 export type SymptomLog = {

@@ -4,6 +4,7 @@ import { Image } from 'expo-image';
 
 import { colors, fonts, radii } from '@/src/theme/tokens';
 import { gifForMove } from '@/src/content/moveGifs';
+import { demoForMove, type ExerciseDemo } from '@/src/content/exerciseDemos';
 import type { MoveGifKey, MoveStep } from '@/src/types';
 
 type Props = {
@@ -14,7 +15,35 @@ type Props = {
   compact?: boolean;
 };
 
+function DemoFrames({ demo, style, compact }: { demo: ExerciseDemo; style?: ViewStyle; compact?: boolean }) {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    if (demo.frames.length < 2) return;
+    const id = setInterval(() => setI((x) => (x + 1) % demo.frames.length), 1100);
+    return () => clearInterval(id);
+  }, [demo]);
+  return (
+    <View style={[styles.wrap, styles.demoWrap, compact && styles.compact, compact && styles.demoWrap, style]}>
+      {demo.frames.map((f, idx) => (
+        <Image
+          key={idx}
+          source={f as number}
+          style={[styles.img, StyleSheet.absoluteFill, { opacity: idx === i ? 1 : 0 }]}
+          contentFit="contain"
+          transition={250}
+        />
+      ))}
+    </View>
+  );
+}
+
 export function MoveGif({ moveName, move, gif, style, compact }: Props) {
+  const demo = demoForMove(move?.name ?? moveName ?? '');
+  if (demo) return <DemoFrames demo={demo} style={style} compact={compact} />;
+  return <GifView moveName={moveName} move={move} gif={gif} style={style} compact={compact} />;
+}
+
+function GifView({ moveName, move, gif, style, compact }: Props) {
   const source = move
     ? gifForMove(move)
     : gif
@@ -73,6 +102,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   compact: { aspectRatio: 1, borderRadius: radii.md, backgroundColor: '#FFF8F6' },
+  demoWrap: { backgroundColor: '#E3F0FB' },
   img: { width: '100%', height: '100%' },
   loader: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center', zIndex: 1 },
   fallback: {

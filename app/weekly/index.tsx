@@ -1,5 +1,9 @@
 import { Stack, useRouter } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@/src/ui/Icon';
+import { aiIsLive, askCoach } from '@/src/features/aiClient';
+import { buildAiContext, localWeeklySummary, WEEKLY_PROMPT, WEEKLY_PROMPT_HI } from '@/src/features/aiContext';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import { Screen } from '@/src/ui/Screen';
@@ -30,6 +34,23 @@ export default function WeeklyReview() {
     return Date.now() - d.getTime() < 7 * 86400000;
   }).length;
   const crashWeek = logs.filter((l) => l.energyCrash).length;
+  const [aiSummary, setAiSummary] = useState<string | null>(null);
+  const [aiBusy, setAiBusy] = useState(false);
+
+  const makeSummary = async () => {
+    setAiBusy(true);
+    const ctx = buildAiContext(useAppStore.getState());
+    try {
+      const text = aiIsLive
+        ? await askCoach(hi ? WEEKLY_PROMPT_HI : WEEKLY_PROMPT, profile, [], ctx)
+        : localWeeklySummary(ctx, hi);
+      setAiSummary(text);
+    } catch {
+      setAiSummary(localWeeklySummary(ctx, hi));
+    } finally {
+      setAiBusy(false);
+    }
+  };
 
   return (
     <>
@@ -65,6 +86,23 @@ export default function WeeklyReview() {
           <Stat label={hi ? 'मील्स' : 'Meals'} value={String(mealsLogged)} />
           <Stat label={hi ? 'मूव' : 'Move'} value={String(workouts)} />
           <Stat label={hi ? 'स्ट्रीक' : 'Streak'} value={`${streakDays}d`} />
+        </View>
+
+        <View style={styles.aiCard}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <Ionicons name="sparkles" size={18} color="#7C5CFF" />
+            <Text style={styles.aiKicker}>{hi ? 'AI साप्ताहिक सारांश' : 'AI weekly summary'}</Text>
+          </View>
+          {aiSummary ? (
+            <Text style={styles.aiText}>{aiSummary}</Text>
+          ) : (
+            <Pressable onPress={makeSummary} disabled={aiBusy} style={styles.aiBtn}>
+              {aiBusy ? <ActivityIndicator color="#fff" size="small" /> : null}
+              <Text style={styles.aiBtnText}>
+                {aiBusy ? (hi ? 'लिख रहे हैं…' : 'Writing…') : hi ? 'मेरा सारांश बनाएँ' : 'Write my summary'}
+              </Text>
+            </Pressable>
+          )}
         </View>
 
         <Muted style={{ marginTop: spacing.lg }}>
@@ -123,6 +161,11 @@ function Stat({ label, value }: { label: string; value: string }) {
 }
 
 const styles = StyleSheet.create({
+  aiCard: { marginTop: spacing.lg, backgroundColor: '#fff', borderRadius: 22, padding: spacing.md, gap: 10, borderWidth: 1, borderColor: '#E6DFFF' },
+  aiKicker: { fontFamily: fonts.bodyBold, fontSize: 12, letterSpacing: 0.5, textTransform: 'uppercase', color: '#7C5CFF' },
+  aiText: { fontFamily: fonts.body, fontSize: 14.5, lineHeight: 22, color: colors.ink },
+  aiBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#7C5CFF', borderRadius: 999, paddingVertical: 12 },
+  aiBtnText: { fontFamily: fonts.bodyBold, fontSize: 14, color: '#fff' },
   pulse: {
     marginTop: spacing.lg,
     backgroundColor: colors.forest,
