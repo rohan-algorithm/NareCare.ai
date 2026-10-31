@@ -12,6 +12,7 @@ const ICONS: Record<string, [IconName, IconName]> = {
   diet: ['restaurant-outline', 'restaurant'],
   move: ['fitness-outline', 'fitness'],
   track: ['calendar-outline', 'calendar'],
+  profile: ['person-circle-outline', 'person-circle'],
 };
 
 function TabIcon({ name, focused }: { name: string; focused: boolean }) {
@@ -28,8 +29,8 @@ export default function TabsLayout() {
   const lang = useAppStore((s) => s.profile?.language ?? 'en');
   const labels =
     lang === 'hi'
-      ? { home: 'होम', diet: 'खाएँ', coach: 'AI', move: 'मूव', track: 'ट्रैक' }
-      : { home: 'Home', diet: 'Eat', coach: 'AI', move: 'Move', track: 'Track' };
+      ? { home: 'होम', diet: 'खाएँ', coach: 'AI', move: 'मूव', track: 'ट्रैक', profile: 'मैं' }
+      : { home: 'Home', diet: 'Eat', coach: 'AI', move: 'Move', track: 'Track', profile: 'Me' };
 
   return (
     <Tabs
@@ -81,13 +82,16 @@ export default function TabsLayout() {
         name="track"
         options={{ title: labels.track, tabBarIcon: ({ focused }) => <TabIcon name="track" focused={focused} /> }}
       />
-      <Tabs.Screen name="profile" options={{ href: null }} />
+      <Tabs.Screen
+        name="profile"
+        options={{ title: labels.profile, tabBarIcon: ({ focused }) => <TabIcon name="profile" focused={focused} /> }}
+      />
     </Tabs>
   );
 }
 
 const styles = StyleSheet.create({
-  iconWrap: { width: 46, height: 30, alignItems: 'center', justifyContent: 'center', borderRadius: 15 },
+  iconWrap: { width: 40, height: 30, alignItems: 'center', justifyContent: 'center', borderRadius: 15 },
   iconOn: { backgroundColor: colors.blushSoft },
   ai: {
     width: 48,

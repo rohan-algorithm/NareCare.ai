@@ -136,8 +136,13 @@ export default function Welcome() {
           onPress={next}
         />
         <Button
-          label="Decode my lab report free · रिपोर्ट मुफ़्त समझें"
+          label="Could I have PCOS? 2-min check · PCOS जाँच"
           variant="secondary"
+          onPress={() => router.push('/pcos-check')}
+        />
+        <Button
+          label="Decode my lab report free · रिपोर्ट मुफ़्त समझें"
+          variant="ghost"
           onPress={freeDecode}
         />
         {__DEV__ ? <Button label="Dev: skip to demo" variant="ghost" onPress={skipSignup} /> : null}

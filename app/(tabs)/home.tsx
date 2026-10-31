@@ -49,6 +49,7 @@ export default function Home() {
   const moveSettings = useAppStore((s) => s.moveSettings);
   const activeProgram = useAppStore((s) => s.activeProgram);
   const openPro = useAppStore((s) => s.openPro);
+  const pcosCheck = useAppStore((s) => s.pcosCheck);
   const pro = useIsPro();
   const todayMove = useMemo(() => {
     const plan = planToday(moveSettings, activeProgram, logs);
@@ -188,6 +189,14 @@ export default function Home() {
   const lesson = nextLesson(week, lessonsDone, goals);
 
   const proTools: { icon: IconName; label: string; sub: string; href: string; fg: string; bg: string }[] = [
+    {
+      icon: 'pulse',
+      label: hi ? 'PCOS जाँच स्कोर' : 'PCOS check score',
+      sub: pcosCheck ? (hi ? `आपका स्कोर ${pcosCheck.score}/100` : `Your score: ${pcosCheck.score}/100`) : hi ? '2 मिनट: क्या मुझे PCOS है?' : '2 min: could I have PCOS?',
+      href: '/pcos-check',
+      fg: '#B4236B',
+      bg: '#FCE4F0',
+    },
     { icon: 'stats-chart', label: hi ? 'प्रोग्रेस प्रूफ़' : 'Progress proof', sub: hi ? 'वज़न, त्वचा, मूड, पीरियड' : 'Weight, skin, mood, cycles', href: '/progress', fg: '#E24B5A', bg: '#FFE4DE' },
     { icon: 'school', label: hi ? 'PCOS अकादमी' : 'PCOS Academy', sub: hi ? '8 हफ्ते, 2-मिनट पाठ' : '8 weeks, 2-min lessons', href: '/learn', fg: '#2A8F6A', bg: '#E2F4EC' },
     { icon: 'camera', label: hi ? 'थाली स्कैनर' : 'Plate scanner', sub: hi ? 'थाली का PCOS स्कोर' : 'PCOS score for any meal', href: '/plate', fg: '#E8801A', bg: '#FFEFD9' },

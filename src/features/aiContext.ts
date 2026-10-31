@@ -4,6 +4,7 @@ import type { LabAnalysis } from '@/src/features/labAi';
 import type { SymptomLog } from '@/src/types';
 
 export type AiContext = {
+  pcosCheck?: { score: number; band: string; criteria: Record<string, boolean | null> } | null;
   cycleDay: number | null;
   phase: string;
   labs: { name: string; value: number; unit: string; status: string }[];
@@ -25,6 +26,7 @@ export type AiContext = {
 };
 
 type Source = {
+  pcosCheck?: { score: number; band: string; criteria: Record<string, boolean | null> } | null;
   symptomLogs: SymptomLog[];
   labAnalyses: LabAnalysis[];
   exerciseLogs: { date: string; completed: boolean }[];
@@ -52,6 +54,7 @@ export function buildAiContext(s: Source): AiContext {
   const lab = s.labAnalyses[0];
   const pulse = computeProgressPulse(s.symptomLogs);
   return {
+    pcosCheck: s.pcosCheck ? { score: s.pcosCheck.score, band: s.pcosCheck.band, criteria: s.pcosCheck.criteria } : null,
     cycleDay,
     phase: getCyclePhase(cycleDay),
     labs: lab ? lab.findings.map((f) => ({ name: f.name, value: f.value, unit: f.unit, status: f.status })) : [],

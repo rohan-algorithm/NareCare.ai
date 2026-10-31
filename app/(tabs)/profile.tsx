@@ -114,6 +114,7 @@ export default function Profile() {
   const startTrial = useAppStore((s) => s.startTrial);
   const applyEntitlement = useAppStore((s) => s.applyEntitlement);
   const pro = useIsPro();
+  const pcosCheck = useAppStore((s) => s.pcosCheck);
   const [showClinical, setShowClinical] = useState(false);
   const lang = profile?.language ?? 'en';
   const hi = lang === 'hi';
@@ -162,6 +163,24 @@ export default function Profile() {
           </Muted>
         </View>
         {!pro ? <Ionicons name="chevron-forward" size={18} color={colors.muted} /> : null}
+      </Pressable>
+      <Pressable onPress={() => router.push('/pcos-check' as any)} style={styles.checkCard}>
+        <View style={[styles.proBadge, { backgroundColor: '#FCE4F0' }]}>
+          <Ionicons name="pulse" size={20} color="#B4236B" />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.proTitle}>{hi ? 'PCOS जाँच स्कोर' : 'PCOS check score'}</Text>
+          <Muted>
+            {pcosCheck
+              ? hi
+                ? `${pcosCheck.score}/100 · ${new Date(pcosCheck.date).toLocaleDateString()}`
+                : `${pcosCheck.score}/100 · taken ${new Date(pcosCheck.date).toLocaleDateString()}`
+              : hi
+                ? '10 सवाल, 2 मिनट'
+                : '10 questions, 2 minutes'}
+          </Muted>
+        </View>
+        <Ionicons name="chevron-forward" size={18} color={colors.muted} />
       </Pressable>
       {__DEV__ ? (
         <Pressable
@@ -213,6 +232,7 @@ const styles = StyleSheet.create({
   proCard: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: spacing.md, padding: 14, borderRadius: 20, backgroundColor: '#FFF4D6', borderWidth: 1, borderColor: '#F5D88A' },
   proCardOn: { backgroundColor: '#fff', borderColor: colors.line },
   proBadge: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFC857', alignItems: 'center', justifyContent: 'center' },
+  checkCard: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 10, padding: 14, borderRadius: 20, backgroundColor: '#fff', borderWidth: 1, borderColor: colors.line },
   proTitle: { fontFamily: fonts.bodyBold, fontSize: 16, color: colors.ink },
   linkBlock: {
     marginTop: spacing.sm,

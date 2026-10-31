@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 
 import { derivePhenotype } from '@/src/features/phenotype';
 import { type ChatMessage } from '@/src/features/aiCoach';
+import type { CheckResult } from '@/src/content/pcosCheck';
 import type { Entitlement } from '@/src/features/billing';
 import { analyzeLabValues, type LabAnalysis } from '@/src/features/labAi';
 import { DEFAULT_REMINDERS, type ReminderPref } from '@/src/features/reminderDefaults';
@@ -214,6 +215,8 @@ type AppState = {
   logAgent: (a: Omit<AgentAction, 'id' | 'at'>) => void;
   autopilotDate: string | null;
   setAutopilotDate: (d: string) => void;
+  pcosCheck: CheckResult | null;
+  setPcosCheck: (r: CheckResult) => void;
 };
 
 const emptyDraft: SetupDraft = { step: 0, symptoms: [], allergies: [], goals: [] };
@@ -699,6 +702,8 @@ export const useAppStore = create<AppState>()(
       logAgent: (a) => set({ agentLog: [{ ...a, id: `ag-${Date.now()}-${Math.round(Math.random() * 1e4)}`, at: new Date().toISOString() }, ...get().agentLog].slice(0, 40) }),
       autopilotDate: null,
       setAutopilotDate: (d) => set({ autopilotDate: d }),
+      pcosCheck: null,
+      setPcosCheck: (r) => set({ pcosCheck: r }),
     }),
     {
       name: 'naricare-store-v3',
@@ -769,6 +774,7 @@ export const useAppStore = create<AppState>()(
         coachUsage: s.coachUsage,
         agentLog: s.agentLog,
         autopilotDate: s.autopilotDate,
+        pcosCheck: s.pcosCheck,
       }),
     }
   )

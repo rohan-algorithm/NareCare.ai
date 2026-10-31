@@ -82,6 +82,7 @@ export default function RootLayout() {
         <Stack.Screen name="tonight/index" options={{ headerShown: true, title: "Tonight's plate", animation: 'slide_from_right' }} />
         <Stack.Screen name="flare/index" options={{ headerShown: true, title: 'Flare care', animation: 'slide_from_right' }} />
         <Stack.Screen name="cycle-calm/index" options={{ headerShown: true, title: 'Cycle calm', animation: 'slide_from_right' }} />
+        <Stack.Screen name="pcos-check/index" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="guide/index" options={{ headerShown: true, title: 'Starter guide', animation: 'slide_from_right' }} />
       </Stack>
       <ProSheetHost />
