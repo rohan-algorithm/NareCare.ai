@@ -107,8 +107,8 @@ export default function Labs() {
             </Text>
             <Text style={styles.heroBody}>
               {hi
-                ? 'SRL, Thyrocare, Dr Lal, Metropolis। डॉक्टर के लिए सवाल भी। खुराक कभी नहीं।'
-                : 'SRL, Thyrocare, Dr Lal, Metropolis. Plus questions for your doctor. Never doses.'}
+                ? 'किसी भी भारतीय लैब की रिपोर्ट। डॉक्टर के लिए सवाल भी। खुराक कभी नहीं।'
+                : 'Reports from any Indian lab. Plus questions for your doctor. Never doses.'}
             </Text>
             {!paid && !freeDecodeUsed ? (
               <View style={styles.freePill}>

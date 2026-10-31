@@ -17,10 +17,10 @@ import { buildInsights, predictNextPeriod } from '@/src/features/insights';
 import type { BleedPattern, PeriodStatus } from '@/src/types';
 
 const SYMPTOM_OPTS = [
-  { id: 'bloating', en: 'Bloating', hi: 'ब्लोटरिंग' },
+  { id: 'bloating', en: 'Bloating', hi: 'पेट फूलना' },
   { id: 'cramps', en: 'Cramps', hi: 'ऐंठन' },
   { id: 'acne', en: 'Acne', hi: 'मुंहासे' },
-  { id: 'mood_swing', en: 'Mood', hi: 'मूड' },
+  { id: 'mood_swing', en: 'Mood swings', hi: 'मूड बदलना' },
   { id: 'headache', en: 'Headache', hi: 'सिरदर्द' },
   { id: 'fatigue', en: 'Fatigue', hi: 'थकान' },
   { id: 'hair_fall', en: 'Hair fall', hi: 'बाल झड़ना' },
@@ -172,7 +172,7 @@ export default function Track() {
       </Label>
       <View style={[styles.wrap, { marginTop: spacing.sm }]}>
         {[1, 2, 3, 4, 5].map((n) => (
-          <Chip key={n} label={String(n)} selected={mood === n} tone="gold" onPress={() => setMood(n)} />
+          <Chip key={n} label={['😣', '🙁', '😐', '🙂', '😄'][n - 1]} selected={mood === n} tone="gold" onPress={() => setMood(n)} />
         ))}
       </View>
 

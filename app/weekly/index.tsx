@@ -109,7 +109,7 @@ export default function WeeklyReview() {
 
         <Pressable onPress={() => router.push('/track')} style={styles.insulinRow}>
           <View style={{ flex: 1 }}>
-            <Label>{hi ? 'इंसुलिन चेक-इन · Dr. Meera' : 'Insulin check-in · Dr. Meera'}</Label>
+            <Label>{hi ? 'इंसुलिन चेक-इन' : 'Insulin check-in'}</Label>
             <Title style={{ marginTop: 4, fontSize: 16 }}>
               {crashWeek === 0
                 ? hi

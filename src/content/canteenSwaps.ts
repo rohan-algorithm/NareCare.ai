@@ -1,4 +1,4 @@
-/** Kavya’s ask — late-night canteen least-bad choices. */
+/** Late-night canteen least-bad choices. */
 export const CANTEEN_SWAPS = [
   {
     craving: 'Maggi / noodles',

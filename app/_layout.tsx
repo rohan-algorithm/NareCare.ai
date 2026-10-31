@@ -75,7 +75,7 @@ export default function RootLayout() {
         <Stack.Screen name="reminders/index" options={{ headerShown: true, title: 'Reminders', animation: 'slide_from_right' }} />
         <Stack.Screen name="grocery/index" options={{ headerShown: true, title: 'Grocery', animation: 'slide_from_right' }} />
         <Stack.Screen name="weekly/index" options={{ headerShown: true, title: 'Weekly review', animation: 'slide_from_right' }} />
-        <Stack.Screen name="council/index" options={{ headerShown: true, title: 'Expert Council', animation: 'slide_from_right' }} />
+        <Stack.Screen name="council/index" options={{ headerShown: true, title: 'Care guide', animation: 'slide_from_right' }} />
         <Stack.Screen name="exam-kit/index" options={{ headerShown: true, title: 'Exam kit', animation: 'slide_from_right' }} />
         <Stack.Screen name="meds/index" options={{ headerShown: true, title: 'Meds & supplements', animation: 'slide_from_right' }} />
         <Stack.Screen name="privacy/index" options={{ headerShown: true, title: 'Privacy', animation: 'slide_from_right' }} />

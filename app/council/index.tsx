@@ -77,7 +77,7 @@ export default function CouncilScreen() {
     <Screen scroll>
       <ScreenHeader
         door={hi ? 'देखभाल' : 'Care'}
-        title={hi ? 'एक्सपर्ट परिषद' : 'Expert Council'}
+        title={hi ? 'केयर गाइड' : 'Care guide'}
         subtitle={
           hi
             ? `${doneCount}/${todayAsks.length} आज · साइकल + phenotype`
@@ -85,6 +85,11 @@ export default function CouncilScreen() {
         }
       />
 
+      <Muted style={{ marginTop: spacing.sm, marginBottom: spacing.sm }}>
+        {hi
+          ? 'NariCare टीम ने 2023 अंतरराष्ट्रीय PCOS गाइडलाइन से लिखा। यह आपके डॉक्टर की सलाह की जगह नहीं है।'
+          : 'Written by the NariCare team from the 2023 International PCOS Guideline. Not a substitute for your own doctor.'}
+      </Muted>
       <View style={styles.tabs}>
         {TABS.map((t) => (
           <Pressable
@@ -152,13 +157,10 @@ export default function CouncilScreen() {
                   <Title>{hi ? m.nameHi : m.name}</Title>
                   <Muted style={{ marginTop: 2 }}>{hi ? m.titleHi : m.title}</Muted>
                   <Text style={styles.city}>
-                    {m.city} · {m.credentials}
+                    {m.credentials}
                   </Text>
                 </View>
               </View>
-              <Body style={{ marginTop: spacing.md }} numberOfLines={4}>
-                {hi ? m.reviewHi : m.review}
-              </Body>
             </Card>
           </Animated.View>
         ))}

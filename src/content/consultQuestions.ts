@@ -1,4 +1,4 @@
-/** Dr. Ananya’s ask — 5 questions for your gynae. */
+/** 5 questions for your gynae. */
 export const CONSULT_QUESTIONS = [
   {
     en: 'Given my cycle length and bleeding pattern, do I need an ultrasound or hormone panel now?',

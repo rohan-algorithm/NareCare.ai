@@ -412,7 +412,7 @@ export const LESSONS: Lesson[] = [
         'अपना प्लान एक भरोसेमंद व्यक्ति के साथ शेयर करें। साथ मिलने से नियमितता बढ़ती है।',
       ],
     },
-    tryToday: { en: 'Read the family reply scripts in Expert Council.', hi: 'एक्सपर्ट काउंसिल में परिवार के जवाब पढ़ें।' },
+    tryToday: { en: 'Read the family reply scripts in the Care guide.', hi: 'केयर गाइड में परिवार के जवाब पढ़ें।' },
     href: '/council',
   },
   {

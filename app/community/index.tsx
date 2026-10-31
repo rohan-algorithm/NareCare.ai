@@ -13,12 +13,10 @@ import { EmptyState } from '@/src/ui/EmptyState';
 import { Body, Display, Label, Muted, Title } from '@/src/ui/Typography';
 import { colors, fonts, radii, spacing } from '@/src/theme/tokens';
 import { useAppStore } from '@/src/store/useAppStore';
+import { useCommunity } from '@/src/features/communityApi';
 
 export default function Community() {
-  const posts = useAppStore((s) => s.posts);
-  const addPost = useAppStore((s) => s.addPost);
-  const toggleUpvote = useAppStore((s) => s.toggleUpvote);
-  const addComment = useAppStore((s) => s.addComment);
+  const { live, posts, loading, error, refresh, create, upvote, comment } = useCommunity();
   const hiddenPostIds = useAppStore((s) => s.hiddenPostIds);
   const hidePost = useAppStore((s) => s.hidePost);
   const lang = useAppStore((s) => s.profile?.language ?? 'en');
@@ -81,10 +79,13 @@ export default function Community() {
       );
       return;
     }
-    addPost({ category: newCat, title: title.trim(), body: body.trim(), isAnonymous: anonymous });
-    setTitle('');
-    setBody('');
-    setComposing(false);
+    create({ category: newCat, title: title.trim(), body: body.trim(), isAnonymous: anonymous })
+      ?.then(() => {
+        setTitle('');
+        setBody('');
+        setComposing(false);
+      })
+      .catch(() => Alert.alert(hi ? 'पोस्ट नहीं हुआ' : 'Couldn’t post', hi ? 'इंटरनेट जाँचें और फिर कोशिश करें।' : 'Check your internet and try again.'));
   };
 
   return (
@@ -194,7 +195,23 @@ export default function Community() {
           ))}
         </View>
 
-        {filtered.length === 0 && (
+        {!live ? (
+          <Card tone="rose" style={{ marginTop: spacing.lg }}>
+            <Muted>
+              {hi
+                ? 'कम्युनिटी सर्वर अभी जुड़ा नहीं है। आपकी पोस्ट सिर्फ़ इस फ़ोन पर सेव होंगी।'
+                : 'The community server isn’t connected yet. Your posts are saved on this phone only.'}
+            </Muted>
+          </Card>
+        ) : error ? (
+          <Pressable onPress={() => void refresh()} style={{ marginTop: spacing.lg }}>
+            <Muted>{hi ? 'पोस्ट लोड नहीं हुईं। फिर कोशिश करने के लिए टैप करें।' : 'Couldn’t load posts. Tap to try again.'}</Muted>
+          </Pressable>
+        ) : loading && !posts.length ? (
+          <Muted style={{ marginTop: spacing.lg }}>{hi ? 'लोड हो रहा है…' : 'Loading…'}</Muted>
+        ) : null}
+
+        {!loading && filtered.length === 0 && (
           <View style={{ marginTop: spacing.lg }}>
             <EmptyState
               title={hi ? 'इस लेन में अभी पोस्ट नहीं' : 'No posts in this lane yet'}
@@ -228,7 +245,7 @@ export default function Community() {
               <Title style={{ marginTop: 8, fontSize: 18 }}>{p.title}</Title>
               <Body style={{ marginTop: 8 }}>{p.body}</Body>
               <View style={styles.actions}>
-                <Pressable onPress={() => toggleUpvote(p.id)}>
+                <Pressable onPress={() => void upvote(p)}>
                   <Text style={[styles.up, p.upvotedByMe && { color: colors.amber }]}>
                     ▲ {p.upvotes}
                   </Text>
@@ -270,8 +287,11 @@ export default function Community() {
                     onPress={() => {
                       const t = (commentDraft[p.id] ?? '').trim();
                       if (!t) return;
-                      addComment(p.id, t, true);
-                      setCommentDraft((d) => ({ ...d, [p.id]: '' }));
+                      if (postViolation(t)) {
+                        Alert.alert(hi ? 'यह कमेंट नहीं हो सकता' : 'Can’t post this', hi ? 'फ़ोन नंबर या लिंक की अनुमति नहीं है।' : 'Phone numbers and links aren’t allowed.');
+                        return;
+                      }
+                      void Promise.resolve(comment(p.id, t, true)).then(() => setCommentDraft((d) => ({ ...d, [p.id]: '' })));
                     }}
                     style={{ marginTop: 8 }}
                   />

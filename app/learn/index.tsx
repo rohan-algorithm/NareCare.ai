@@ -6,6 +6,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Screen } from '@/src/ui/Screen';
 import { Ionicons } from '@/src/ui/Icon';
 import { colors, fonts, gradients, shadowCard, spacing } from '@/src/theme/tokens';
+import { FREE, useIsPro } from '@/src/features/pro';
 import { useAppStore } from '@/src/store/useAppStore';
 import { LESSONS, WEEK_THEMES, nextLesson, programWeek } from '@/src/content/academy';
 
@@ -14,6 +15,7 @@ export default function Learn() {
   const hi = useAppStore((s) => s.profile?.language) === 'hi';
   const goals = useAppStore((s) => s.profile?.goals ?? []);
   const done = useAppStore((s) => s.lessonsDone);
+  const pro = useIsPro();
   const programStart = useAppStore((s) => s.programStart);
   const ensureProgramStart = useAppStore((s) => s.ensureProgramStart);
   useEffect(() => ensureProgramStart(), [ensureProgramStart]);
@@ -53,10 +55,11 @@ export default function Learn() {
               </Text>
               {LESSONS.filter((l) => l.week === w).map((l) => {
                 const isDone = done.includes(l.id);
+                const proLocked = !pro && LESSONS.indexOf(l) >= FREE.lessons;
                 return (
                   <Pressable key={l.id} disabled={locked} onPress={() => router.push(`/learn/${l.id}` as any)} style={styles.lesson}>
                     <Ionicons
-                      name={isDone ? 'checkmark-circle' : locked ? 'lock-closed-outline' : 'play-circle-outline'}
+                      name={isDone ? 'checkmark-circle' : locked || proLocked ? 'lock-closed-outline' : 'play-circle-outline'}
                       size={22}
                       color={isDone ? colors.good : locked ? colors.muted : colors.blushDeep}
                     />

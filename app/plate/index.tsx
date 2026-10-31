@@ -9,6 +9,7 @@ import { Button } from '@/src/ui/Button';
 import { ProgressRing } from '@/src/ui/ProgressRing';
 import { Ionicons, IconBubble } from '@/src/ui/Icon';
 import { colors, fonts, gradients, shadowCard, spacing } from '@/src/theme/tokens';
+import { FREE, isPro } from '@/src/features/pro';
 import { useAppStore } from '@/src/store/useAppStore';
 import { PLATE_ITEMS, scorePlate } from '@/src/features/plateScore';
 import { labScanAvailable, pickPhoto } from '@/src/features/labOcr';
@@ -38,6 +39,10 @@ export default function Plate() {
   });
 
   const snap = async (source: 'camera' | 'library') => {
+    if (!isPro() && scans.length >= FREE.plateScans) {
+      useAppStore.getState().openPro('plate');
+      return;
+    }
     setBusy(true);
     try {
       const photo = await pickPhoto(source);

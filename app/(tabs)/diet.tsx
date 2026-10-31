@@ -8,6 +8,7 @@ import { Screen } from '@/src/ui/Screen';
 import { Disclaimer } from '@/src/ui/Disclaimer';
 import { Ionicons, type IconName } from '@/src/ui/Icon';
 import { colors, fonts, mealSlotAccent, shadowCard, spacing } from '@/src/theme/tokens';
+import { isPro, useIsPro } from '@/src/features/pro';
 import { useAppStore } from '@/src/store/useAppStore';
 import { livingContextLabel } from '@/src/content/meals';
 import { CANTEEN_SWAPS } from '@/src/content/canteenSwaps';
@@ -66,6 +67,8 @@ export default function Diet() {
   const markMeal = useAppStore((s) => s.markMeal);
   const mealSwaps = useAppStore((s) => s.mealSwaps);
   const swapMeal = useAppStore((s) => s.swapMeal);
+  const openPro = useAppStore((s) => s.openPro);
+  const pro = useIsPro();
   const updateFoodPrefs = useAppStore((s) => s.updateFoodPrefs);
   const hi = profile?.language === 'hi';
   const lang = hi ? 'hi' : 'en';
@@ -85,6 +88,7 @@ export default function Diet() {
   const showCanteen = prefs.context === 'hostel_mess' || prefs.context === 'eating_out';
 
   const swap = (slot: Slot) => {
+    if (!isPro()) return void openPro('diet');
     const used = SLOTS.filter((s) => s !== slot).map((s) => plan[s]?.id ?? '');
     const next = nextSwap(slot, prefs, plan[slot]?.id, used);
     if (next) swapMeal(date, slot, next.id);
@@ -160,7 +164,8 @@ export default function Diet() {
         {dates.map((d) => {
           const on = d === date;
           return (
-            <Pressable key={d} onPress={() => setDate(d)} style={[styles.day, on && styles.dayOn]}>
+            <Pressable key={d} onPress={() => (d === today || pro ? setDate(d) : openPro('diet'))} style={[styles.day, on && styles.dayOn]}>
+              {!pro && d !== today ? <Ionicons name="lock-closed" size={10} color={colors.muted} style={styles.dayLock} /> : null}
               <Text style={[styles.dayTop, on && styles.dayTextOn]}>{dayLabel(d, today, hi)}</Text>
               <Text style={[styles.dayNum, on && styles.dayTextOn]}>{Number(d.slice(8))}</Text>
             </Pressable>
@@ -302,6 +307,7 @@ function Action({ icon, label, active, onPress }: { icon: IconName; label: strin
 const CARD = { backgroundColor: '#fff', borderRadius: 22, padding: spacing.md, ...shadowCard, shadowOpacity: 0.06, elevation: 2 } as const;
 
 const styles = StyleSheet.create({
+  dayLock: { position: 'absolute', top: 6, right: 6 },
   header: { flexDirection: 'row', alignItems: 'center', marginTop: spacing.sm },
   kicker: { fontFamily: fonts.bodyBold, fontSize: 12, letterSpacing: 0.6, textTransform: 'uppercase', color: colors.muted },
   title: { fontFamily: fonts.displayBold, fontSize: 28, color: colors.ink, letterSpacing: -0.6 },

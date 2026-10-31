@@ -227,48 +227,6 @@ type AppState = {
 const emptyDraft: SetupDraft = { step: 0, symptoms: [], allergies: [], goals: [] };
 const today = () => format(new Date(), 'yyyy-MM-dd');
 
-const SEED_POSTS: CommunityPost[] = [
-  {
-    id: 'p1',
-    category: 'diet_tips',
-    title: 'Mess food hacks that actually helped',
-    body: 'Half rice, double sabzi, curd always. Spearmint tea evening. Week 3 acne quieter.',
-    isAnonymous: true,
-    upvotes: 42,
-    upvotedByMe: false,
-    comments: [
-      {
-        id: 'c1',
-        body: 'Same! I add roasted chana from the canteen.',
-        isAnonymous: true,
-        createdAt: new Date().toISOString(),
-      },
-    ],
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'p2',
-    category: 'emotional_support',
-    title: 'Family keeps saying “bas thoda weight kam karo”',
-    body: 'Sharing because it feels heavy. Anonymous for a reason.',
-    isAnonymous: true,
-    upvotes: 87,
-    upvotedByMe: false,
-    comments: [],
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'p3',
-    category: 'success_stories',
-    title: 'Cycles from 45 → 32 days in 4 months',
-    body: 'North Indian low-GI + luteal yoga. Doctor Visit Kit helped my gynae visit.',
-    isAnonymous: false,
-    upvotes: 120,
-    upvotedByMe: false,
-    comments: [],
-    createdAt: new Date().toISOString(),
-  },
-];
 
 export const useAppStore = create<AppState>()(
   persist(
@@ -296,7 +254,7 @@ export const useAppStore = create<AppState>()(
       ],
       labAnalyses: [],
       reminders: DEFAULT_REMINDERS,
-      posts: SEED_POSTS,
+      posts: [],
       supplements: {
         date: today(),
         items: {},
@@ -730,6 +688,10 @@ export const useAppStore = create<AppState>()(
         state.setHydrated(true);
         // Soft day must never stick across launches
         state.setBadDayMode(false);
+        // Sample posts from early builds looked like real members: drop them.
+        if (state.posts?.some((p) => ['p1', 'p2', 'p3'].includes(p.id))) {
+          useAppStore.setState({ posts: state.posts.filter((p) => !['p1', 'p2', 'p3'].includes(p.id)) });
+        }
         // Ensure new reminder fields (href/kind) exist after upgrades
         const merged = DEFAULT_REMINDERS.map((d) => {
           const prev = state.reminders?.find((r) => r.key === d.key);

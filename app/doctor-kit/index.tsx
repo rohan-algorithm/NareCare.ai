@@ -10,6 +10,7 @@ import { Card } from '@/src/ui/Card';
 import { Disclaimer } from '@/src/ui/Disclaimer';
 import { Body, Display, Label, Muted, Title } from '@/src/ui/Typography';
 import { colors, fonts, spacing } from '@/src/theme/tokens';
+import { requirePro } from '@/src/features/pro';
 import { useAppStore } from '@/src/store/useAppStore';
 import { phenotypeLabel } from '@/src/features/phenotype';
 import { cycleStatus, getCycleDay, getCyclePhase } from '@/src/features/cycle';
@@ -148,7 +149,7 @@ export default function DoctorKit() {
         </Card>
 
         <Label style={{ marginTop: spacing.lg, marginBottom: spacing.sm }}>
-          {lang === 'hi' ? 'गायनी से पूछें (Dr. Ananya)' : 'Ask your gynae (Dr. Ananya)'}
+          {lang === 'hi' ? 'गायनी से पूछें' : 'Ask your gynae'}
         </Label>
         <View style={styles.qList}>
           {CONSULT_QUESTIONS.slice(0, 5).map((q, i) => (
@@ -160,7 +161,7 @@ export default function DoctorKit() {
 
         <Button
           label={pdfBusy ? (lang === 'hi' ? 'PDF बन रहा है…' : 'Making PDF…') : lang === 'hi' ? 'PDF बनाएँ और शेयर करें' : 'Create & share PDF'}
-          onPress={sharePdf}
+          onPress={() => requirePro('doctor_kit', () => void sharePdf())}
           disabled={pdfBusy}
           style={{ marginTop: spacing.md }}
         />

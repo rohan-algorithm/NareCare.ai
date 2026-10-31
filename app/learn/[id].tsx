@@ -11,6 +11,7 @@ import { colors, fonts, shadowCard, spacing } from '@/src/theme/tokens';
 import { sendCoachMessage } from '@/src/features/coachAgent';
 import { useAppStore } from '@/src/store/useAppStore';
 import { LESSON_BY_ID, LESSONS, WEEK_THEMES } from '@/src/content/academy';
+import { FREE, useIsPro } from '@/src/features/pro';
 
 export default function LessonScreen() {
   const router = useRouter();
@@ -20,6 +21,8 @@ export default function LessonScreen() {
   const done = useAppStore((s) => s.lessonsDone);
   const completeLesson = useAppStore((s) => s.completeLesson);
   const [speaking, setSpeaking] = useState(false);
+  const pro = useIsPro();
+  const openPro = useAppStore((s) => s.openPro);
   useEffect(() => () => void Speech.stop(), []);
 
   if (!lesson) return null;
@@ -28,6 +31,7 @@ export default function LessonScreen() {
   const idx = LESSONS.findIndex((l) => l.id === lesson.id);
   const following = LESSONS[idx + 1];
   const isDone = done.includes(lesson.id);
+  const locked = !pro && idx >= FREE.lessons;
 
   const listen = () => {
     if (speaking) {
@@ -61,11 +65,22 @@ export default function LessonScreen() {
           <Ionicons name={speaking ? 'stop-circle' : 'volume-high'} size={18} color={colors.blushDeep} />
           <Text style={styles.listenText}>{speaking ? (hi ? 'रोकें' : 'Stop') : hi ? 'सुनें' : 'Listen'}</Text>
         </Pressable>
-        {paras.map((p, i) => (
+        {(locked ? paras.slice(0, 1) : paras).map((p, i) => (
           <Animated.Text key={i} entering={FadeInDown.delay(60 * i).duration(320)} style={styles.para}>
             {p}
           </Animated.Text>
         ))}
+        {locked ? (
+          <Pressable onPress={() => openPro('lesson')} style={styles.lockCard}>
+            <Ionicons name="lock-closed" size={20} color="#7A4A00" />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.lockTitle}>{hi ? 'बाकी पाठ Pro में' : 'Read the rest with Pro'}</Text>
+              <Text style={styles.lockBody}>
+                {hi ? `पहले ${FREE.lessons} पाठ फ्री हैं। पूरा 8-हफ्ते का कोर्स Pro में।` : `The first ${FREE.lessons} lessons are free. The full 8-week course is in Pro.`}
+              </Text>
+            </View>
+          </Pressable>
+        ) : null}
         <View style={styles.try}>
           <Text style={styles.tryKicker}>{hi ? 'आज आज़माएँ' : 'Try today'}</Text>
           <Text style={styles.tryText}>{lesson.tryToday[lang]}</Text>
@@ -98,6 +113,9 @@ export default function LessonScreen() {
 }
 
 const styles = StyleSheet.create({
+  lockCard: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#FFF4D6', borderRadius: 18, padding: 14, marginTop: spacing.md, borderWidth: 1, borderColor: '#F5D88A' },
+  lockTitle: { fontFamily: fonts.bodyBold, fontSize: 15, color: '#4A2C00' },
+  lockBody: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18, color: '#4A2C00', marginTop: 2 },
   kicker: { fontFamily: fonts.bodyBold, fontSize: 12, letterSpacing: 0.6, textTransform: 'uppercase', color: colors.blushDeep, marginTop: spacing.sm },
   title: { fontFamily: fonts.displayBold, fontSize: 28, lineHeight: 34, color: colors.ink, letterSpacing: -0.6, marginTop: 6 },
   listen: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', marginTop: 10, backgroundColor: colors.blushSoft, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 999 },

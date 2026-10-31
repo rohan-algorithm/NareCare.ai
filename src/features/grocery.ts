@@ -26,8 +26,10 @@ export function buildGroceryList(profile: UserProfile | null, swaps: Record<stri
     for (const slot of SLOTS) for (const ing of plan[slot]?.ingredients ?? []) set.add(ing);
   }
 
-  const all = [...set];
-  const produceKeys = /leaves|pudina|mint|cucumber|onion|tomato|capsicum|pepper|salad|lauki|palak|methi|ginger|lemon|veg|sprout/i;
+  // "Sprouts" is covered by "Mixed sprouts", "Lauki" by "Zucchini/lauki".
+  const all = [...set].filter((x) => ![...set].some((y) => y !== x && y.toLowerCase().includes(x.toLowerCase())));
+  const produceKeys =
+    /leaves|pudina|mint|cucumber|onion|tomato|capsicum|pepper|salad|lauki|palak|spinach|methi|ginger|garlic|lemon|veg|sprout|bhindi|okra|beans|zucchini|gourd|brinjal|baingan|cabbage|cauliflower|gobi|carrot|beet|peas|mushroom|coriander|fruit|banana|apple|guava|papaya|berries/i;
   const produce = all.filter((i) => produceKeys.test(i)).sort();
   const pantry = all.filter((i) => !produceKeys.test(i)).sort();
 

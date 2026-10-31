@@ -11,7 +11,7 @@ import { Body, Display, Label, Muted, Title } from '@/src/ui/Typography';
 import { colors, fonts, radii, spacing } from '@/src/theme/tokens';
 import { useAppStore } from '@/src/store/useAppStore';
 
-/** Dr. Meera’s ask — adherence log only, never dosing advice. */
+/** Adherence log only, never dosing advice. */
 export default function MedsLog() {
   const profile = useAppStore((s) => s.profile);
   const supplements = useAppStore((s) => s.supplements);
@@ -38,7 +38,7 @@ export default function MedsLog() {
       />
       <Screen scroll>
         <Animated.View entering={FadeInDown.duration(400)}>
-          <Label>{lang === 'hi' ? 'डॉ. मीरा · सुरक्षित लॉग' : 'Dr. Meera · safe log'}</Label>
+          <Label>{lang === 'hi' ? 'सुरक्षित लॉग' : 'Safe log'}</Label>
           <Display style={{ marginTop: 6 }}>
             {lang === 'hi' ? 'सिर्फ़ पालन\nट्रैक करें' : 'Track adherence\nonly'}
           </Display>

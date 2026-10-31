@@ -24,7 +24,7 @@ const SYMPTOMS = [
   { id: 'facial_hair', en: 'Facial hair', hi: 'चेहरे पर बाल' },
   { id: 'mood_swings', en: 'Mood swings', hi: 'मूड स्विंग' },
   { id: 'fatigue', en: 'Fatigue', hi: 'थकान' },
-  { id: 'bloating', en: 'Bloating', hi: 'ब्लोटरिंग' },
+  { id: 'bloating', en: 'Bloating', hi: 'पेट फूलना' },
   { id: 'cravings', en: 'Cravings', hi: 'क्रेविंग' },
 ];
 

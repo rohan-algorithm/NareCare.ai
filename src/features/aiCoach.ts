@@ -83,7 +83,7 @@ export function coachReply(userText: string, profile: UserProfile | null): strin
     return `Bad-day mode exists on Home — turn it on. Today only needs one tiny win (water, or one council ask). Skip Move with kindness if cramps/exhaustion. Come back tomorrow; quitting the app is the only real failure.${DISCLAIMER}`;
   }
   if (/hostel|mess|maggi|canteen|late night/.test(q)) {
-    return `Hostel/mess mode: half sabzi rule, curd if available. Late-night Maggi → half pack + egg/paneer. See Diet → canteen swaps (Kavya). Stock roasted chana in your room — willpower at 1am is a myth.${DISCLAIMER}`;
+    return `Hostel/mess mode: half sabzi rule, curd if available. Late-night Maggi → half pack + egg/paneer. See Diet → canteen swaps. Stock roasted chana in your room — willpower at 1am is a myth.${DISCLAIMER}`;
   }
 
   return `${name}, for your ${ph} focus, start here:\n1) ${tips[0]}\n2) ${tips[1]}\n3) ${tips[2]}\n\nAsk me something specific (cravings, periods, labs, hostel food) for a sharper answer.${DISCLAIMER}`;

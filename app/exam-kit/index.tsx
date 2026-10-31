@@ -26,7 +26,7 @@ export default function ExamKit() {
       />
       <Screen scroll>
         <Animated.View entering={FadeInDown.duration(400)}>
-          <Label>{lang === 'hi' ? 'काव्या · हॉस्टल' : 'Kavya · hostel'}</Label>
+          <Label>{lang === 'hi' ? 'हॉस्टल · परीक्षा' : 'Hostel · exam week'}</Label>
           <Display style={{ marginTop: 6 }}>
             {lang === 'hi' ? EXAM_KIT.titleHi : EXAM_KIT.title}
           </Display>

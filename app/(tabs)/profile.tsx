@@ -29,8 +29,8 @@ const CARE_CORE: Link[] = [
   },
   {
     href: '/council',
-    en: ['Expert Council', 'Today’s advice from the care team'],
-    hi: ['एक्सपर्ट काउंसिल', 'आज की देखभाल सलाह'],
+    en: ['Care guide', 'Daily tips from the PCOS guideline'],
+    hi: ['केयर गाइड', 'PCOS गाइडलाइन से रोज़ की टिप्स'],
   },
 ];
 

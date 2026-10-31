@@ -1,4 +1,4 @@
-/** Kavya’s ask — exam-week survival for hostel PCOS. */
+/** Exam-week survival for hostel PCOS. */
 export const EXAM_KIT = {
   title: 'Exam-week survival kit',
   titleHi: 'परीक्षा हफ़्ते की किट',

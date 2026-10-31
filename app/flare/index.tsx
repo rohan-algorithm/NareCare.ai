@@ -10,6 +10,7 @@ import { Disclaimer } from '@/src/ui/Disclaimer';
 import { Muted, Title } from '@/src/ui/Typography';
 import { colors, fonts, spacing } from '@/src/theme/tokens';
 import { FLARE_CARE } from '@/src/content/patientProblems';
+import { waterGoal } from '@/src/features/water';
 import { useAppStore } from '@/src/store/useAppStore';
 
 export default function Flare() {
@@ -18,6 +19,7 @@ export default function Flare() {
   const addWater = useAppStore((s) => s.addWater);
   const setBadDayMode = useAppStore((s) => s.setBadDayMode);
   const waterGlasses = useAppStore((s) => s.waterGlasses);
+  const weightKg = useAppStore((s) => s.profile?.weightKg);
   const lang = profile?.language ?? 'en';
   const hi = lang === 'hi';
   const [done, setDone] = useState<Record<number, boolean>>({});
@@ -73,7 +75,7 @@ export default function Flare() {
                   </Title>
                   {step.action === 'water' && (
                     <Muted style={{ marginTop: 4 }}>
-                      {waterGlasses}/8 {hi ? 'गिलास' : 'glasses'}
+                      {waterGlasses}/{waterGoal(weightKg)} {hi ? 'गिलास' : 'glasses'}
                     </Muted>
                   )}
                 </View>

@@ -1,4 +1,4 @@
-/** Sneha’s ask — festival / wedding week survival without nuking adherence. */
+/** Festival / wedding week survival without nuking adherence. */
 export const FESTIVAL_WEEK = {
   title: 'Festival & wedding week',
   titleHi: 'त्योहार / शादी वाला हफ़्ता',
