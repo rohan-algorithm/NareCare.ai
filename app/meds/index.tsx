@@ -63,6 +63,13 @@ export default function MedsLog() {
         <Label style={{ marginTop: spacing.lg, marginBottom: spacing.sm }}>
           {lang === 'hi' ? 'आज लिया?' : 'Taken today?'}
         </Label>
+        {Object.keys(supplements.items).length === 0 ? (
+          <Muted>
+            {lang === 'hi'
+              ? 'अभी कुछ नहीं जोड़ा। सिर्फ़ वही जोड़ें जो डॉक्टर ने बताया है, जैसे Metformin, विटामिन D या इनोसिटॉल।'
+              : 'Nothing added yet. Add only what your doctor advised, like Metformin, vitamin D or inositol.'}
+          </Muted>
+        ) : null}
         {Object.keys(supplements.items).map((item, i) => {
           const on = !!supplements.items[item];
           return (

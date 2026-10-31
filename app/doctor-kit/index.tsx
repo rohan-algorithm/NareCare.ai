@@ -12,7 +12,7 @@ import { Body, Display, Label, Muted, Title } from '@/src/ui/Typography';
 import { colors, fonts, spacing } from '@/src/theme/tokens';
 import { useAppStore } from '@/src/store/useAppStore';
 import { phenotypeLabel } from '@/src/features/phenotype';
-import { getCycleDay, getCyclePhase } from '@/src/features/cycle';
+import { cycleStatus, getCycleDay, getCyclePhase } from '@/src/features/cycle';
 import { computeProgressPulse } from '@/src/features/progressPulse';
 import { CONSULT_QUESTIONS } from '@/src/content/consultQuestions';
 
@@ -31,7 +31,9 @@ export default function DoctorKit() {
   const lang = profile?.language ?? 'en';
   const pulse = computeProgressPulse(logs, lang);
   const cycleDay = getCycleDay(logs);
-  const phase = getCyclePhase(cycleDay);
+  const phase = getCyclePhase(cycleDay, logs);
+  const cyc = cycleStatus(logs);
+  const pcosCheck = useAppStore((s) => s.pcosCheck);
   const adherence = Object.values(mealMarks).filter((s) => s === 'ate' || s === 'swapped').length;
   const recentBleed = logs
     .filter((l) => l.periodStatus !== 'none')
@@ -64,7 +66,9 @@ export default function DoctorKit() {
         name: profile?.name ?? '—',
         age: profile?.age,
         focus: phenotypeLabel(profile?.phenotype ?? 'mixed'),
-        cycle: cycleDay ? `Day ${cycleDay} (${phase})` : 'Not enough period logs',
+        cycle: cycleDay
+          ? `Day ${cycleDay}${cyc.avg ? ` · usual cycle ${cyc.avg} days (${cyc.regular ? 'regular' : 'irregular'})` : ''}${phase !== 'unknown' ? ` · ${phase}` : ''}${cyc.overdue ? ' · NO PERIOD 90+ DAYS' : ''}`
+          : 'Not enough period logs',
         bleed: recentBleed || '—',
         pulse,
         logs,
@@ -78,6 +82,7 @@ export default function DoctorKit() {
         skin: skinLogs,
         mind: mindChecks,
         ttc: { on: ttc.on, since: ttc.since, positives: ttc.lhTests.filter((t) => t.result === 'pos').length },
+        pcosCheck,
       });
       noteDoctorKitExport();
     } catch {

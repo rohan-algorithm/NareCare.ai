@@ -97,7 +97,10 @@ function BodyTab({ hi }: { hi: boolean }) {
   const waists = logs.filter((l) => l.waistCm).map((l) => ({ label: short(l.date), value: l.waistCm as number }));
   const startW = weights[0]?.value ?? profile?.weightKg;
   const curW = weights[weights.length - 1]?.value ?? profile?.weightKg;
-  const goal = startW ? Math.round(startW * 0.95 * 10) / 10 : undefined;
+  // The 5% goal only applies above the Asian BMI cut-off of 23; lean PCOS is about strength and insulin, not weight.
+  const startBmi = startW && profile?.heightCm ? startW / (profile.heightCm / 100) ** 2 : undefined;
+  const lean = startBmi !== undefined && startBmi < 23;
+  const goal = startW && !lean ? Math.round(startW * 0.95 * 10) / 10 : undefined;
   const lost = startW && curW ? Math.round((startW - curW) * 10) / 10 : 0;
   const curWaist = waists[waists.length - 1]?.value;
   const whtr = curWaist && profile?.heightCm ? Math.round((curWaist / profile.heightCm) * 100) / 100 : null;
@@ -127,6 +130,16 @@ function BodyTab({ hi }: { hi: boolean }) {
         <Stat value={whtr ? String(whtr) : '—'} label={hi ? 'कमर/कद अनुपात' : 'Waist/height'} good={!!whtr && whtr < 0.5} />
       </View>
 
+      {lean ? (
+        <View style={[styles.card, { backgroundColor: '#E6F2ED' }]}>
+          <Text style={styles.cardTitle}>{hi ? 'लीन PCOS: वज़न घटाना लक्ष्य नहीं' : 'Lean PCOS: weight loss isn’t your goal'}</Text>
+          <Text style={styles.cardBody}>
+            {hi
+              ? 'आपका BMI स्वस्थ सीमा में है। ताकत बढ़ाना, कमर का माप और पीरियड नियमित होना आपकी असली प्रगति है।'
+              : 'Your BMI is in the healthy range. Building strength, your waist measure and more regular cycles are your real progress.'}
+          </Text>
+        </View>
+      ) : null}
       {goal && curW ? (
         <View style={[styles.card, { backgroundColor: curW <= goal ? '#E2F4EC' : '#FFF5E6' }]}>
           <Text style={styles.cardTitle}>

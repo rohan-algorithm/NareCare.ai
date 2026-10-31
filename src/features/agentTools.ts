@@ -3,10 +3,10 @@ import type { Slot } from '@/src/content/mealLibrary';
 import { localDate, nextSwap, planForDate, prefsFrom } from '@/src/features/mealPlan';
 import { FOCUS_TITLE, type Focus } from '@/src/features/workoutEngine';
 import { formatAlarmTime } from '@/src/features/reminderDefaults';
-import { useAppStore } from '@/src/store/useAppStore';
+import { useAppStore, type AgentUndo } from '@/src/store/useAppStore';
 
 export type ToolCall = { id: string; name: string; input: Record<string, unknown> };
-export type ToolOutcome = { ok: boolean; text: string; textHi: string; href?: string };
+export type ToolOutcome = { ok: boolean; text: string; textHi: string; href?: string; undo?: AgentUndo };
 
 const SLOT_NAME: Record<Slot, [string, string]> = {
   breakfast: ['breakfast', 'नाश्ता'],
@@ -71,9 +71,11 @@ export function runTool(name: string, input: Record<string, unknown>): ToolOutco
       const used = Object.values(plan).flatMap((m) => (m ? [m.id] : []));
       const next = nextSwap(slot, prefs, plan[slot]?.id, used);
       if (!next) return { ok: false, text: 'No other option fits your diet for that meal', textHi: 'इस खाने के लिए और विकल्प नहीं' };
+      const prevSwap = s.mealSwaps[`${today}|${slot}`] ?? null;
       s.swapMeal(today, slot, next.id);
       return {
         ok: true,
+        undo: { kind: 'meal', date: today, slot, prev: prevSwap },
         text: `Swapped ${SLOT_NAME[slot][0]} to ${next.name}`,
         textHi: `${SLOT_NAME[slot][1]} बदलकर ${next.nameHi}`,
         href: '/diet',
@@ -87,10 +89,12 @@ export function runTool(name: string, input: Record<string, unknown>): ToolOutco
       if (min) patch.minutes = [10, 15, 20, 30].reduce((a, b) => (Math.abs(b - min) < Math.abs(a - min) ? b : a));
       if (typeof input.low_impact === 'boolean') patch.lowImpact = input.low_impact;
       if (!Object.keys(patch).length) return { ok: false, text: 'Nothing to change', textHi: 'कुछ बदलना नहीं' };
+      const before = Object.fromEntries(Object.keys(patch).map((k) => [k, s.moveSettings[k as keyof typeof s.moveSettings]]));
       s.setMoveSettings(patch);
       const m = { ...s.moveSettings, ...patch };
       return {
         ok: true,
+        undo: { kind: 'move', prev: before },
         text: `Workouts set to level ${m.level}, ${m.minutes} min${m.lowImpact ? ', no jumping' : ''}`,
         textHi: `वर्कआउट: लेवल ${m.level}, ${m.minutes} मिनट${m.lowImpact ? ', बिना कूदे' : ''}`,
         href: '/move',
@@ -147,7 +151,7 @@ export function runTools(calls: ToolCall[]) {
       out = { ok: false, text: e?.message ?? 'Failed', textHi: 'नहीं हो पाया' };
     }
     if (out.ok && c.name !== 'open_screen' && c.name !== 'start_workout') {
-      useAppStore.getState().logAgent({ text: out.text, textHi: out.textHi, href: out.href });
+      useAppStore.getState().logAgent({ text: out.text, textHi: out.textHi, href: out.href, undo: out.undo });
     }
     return { id: c.id, out, result: { id: c.id, content: out.text, isError: !out.ok }, label: hi ? out.textHi : out.text };
   });

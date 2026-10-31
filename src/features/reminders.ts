@@ -128,7 +128,7 @@ function buildNudges(): Nudge[] {
     const [y, m, dd] = date.split('-').map(Number);
     const session = planToday(s.moveSettings, s.activeProgram, isToday ? s.symptomLogs : []);
     const daySeed = isToday ? session.seed : `${session.seed}|${date}`;
-    const routine = buildWorkout(session.focus, { ...s.moveSettings, minutes: session.minutes, lowImpact: session.lowImpact }, daySeed, boostFor(session.week));
+    const routine = buildWorkout(session.focus, { ...s.moveSettings, minutes: session.minutes, lowImpact: session.lowImpact, periodSafe: session.gentle }, daySeed, boostFor(session.week));
 
     for (const r of s.reminders.filter((x) => x.enabled)) {
       if (isToday && s.scheduleDone[r.key]) continue;
@@ -303,6 +303,14 @@ function buildNudges(): Nudge[] {
   return out.filter((n) => n.at.getTime() > now + 60_000).sort((a, b) => a.at.getTime() - b.at.getTime());
 }
 
+/** Lock-screen-safe text: says what kind of reminder it is, nothing about health. */
+function discreetBody(n: Nudge, hi: boolean): string {
+  if (n.category === 'water') return hi ? 'पानी का समय 💧' : 'Water break 💧';
+  if (n.category === 'meal') return hi ? 'खाने का समय' : 'Meal time';
+  if (n.channel === 'naricare-move') return hi ? 'आज का मूव तैयार है' : 'Your move for today is ready';
+  return hi ? 'आपके लिए एक छोटा रिमाइंडर' : 'A small reminder for you';
+}
+
 let rebuilding: Promise<number> | null = null;
 
 /** Replaces all scheduled notifications with a fresh, personalised week. */
@@ -317,11 +325,13 @@ export async function rebuildNudges(): Promise<number> {
     await ensureCategories(N).catch(() => undefined);
     await N.cancelAllScheduledNotificationsAsync();
     const nudges = buildNudges().slice(0, 90);
+    const { discreet, profile } = useAppStore.getState();
+    const hi = profile?.language === 'hi';
     for (const n of nudges) {
       await N.scheduleNotificationAsync({
         content: {
-          title: n.title,
-          body: n.body,
+          title: discreet ? 'NariCare' : n.title,
+          body: discreet ? discreetBody(n, hi) : n.body,
           sound: true,
           data: { url: n.href, ...n.extra },
           ...(n.category ? { categoryIdentifier: n.category } : {}),

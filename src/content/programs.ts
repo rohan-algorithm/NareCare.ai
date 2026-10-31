@@ -14,10 +14,10 @@ export type Program = {
 export const PROGRAMS: Program[] = [
   {
     id: 'kickstart',
-    title: { en: 'PCOS Fat-Loss Kickstart', hi: 'PCOS फैट-लॉस किकस्टार्ट' },
+    title: { en: 'PCOS Metabolic Kickstart', hi: 'PCOS मेटाबॉलिक किकस्टार्ट' },
     pitch: {
-      en: '4 weeks · 4 days a week. Strength circuits plus low-impact cardio to improve insulin sensitivity and start your 5% goal.',
-      hi: '4 हफ्ते · हफ्ते में 4 दिन। स्ट्रेंथ सर्किट और हल्का कार्डियो, इंसुलिन सुधारने और 5% लक्ष्य शुरू करने के लिए।',
+      en: '4 weeks · 4 days a week. Strength circuits plus low-impact cardio to improve insulin sensitivity, energy and cycles.',
+      hi: '4 हफ्ते · हफ्ते में 4 दिन। स्ट्रेंथ सर्किट और हल्का कार्डियो, इंसुलिन, ऊर्जा और पीरियड सुधारने के लिए।',
     },
     weeks: 4,
     sessions: ['full', 'cardio', 'lower', 'upper_core'],

@@ -25,10 +25,18 @@ export type KitData = {
   skin?: { date: string; facialHair: number; hairFall: number; acne: number }[];
   mind?: { date: string; phq2: number; gad2: number }[];
   ttc?: { on: boolean; since: string | null; positives: number };
+  pcosCheck?: { score: number; band: string; date: string; criteria: { ovulation: boolean; androgen: boolean; ovaries: boolean | null } } | null;
 };
 
 function extras(d: KitData): string {
   const parts: string[] = [];
+  if (d.pcosCheck) {
+    const c = d.pcosCheck.criteria;
+    const yn = (v: boolean | null) => (v === null ? 'not assessed' : v ? 'reported' : 'not reported');
+    parts.push(
+      `<h2>Self-screening (${esc(d.pcosCheck.date.slice(0, 10))})</h2><p>Rotterdam-based questionnaire score ${d.pcosCheck.score}/100 (${esc(d.pcosCheck.band)}). Oligo/anovulation: ${yn(c.ovulation)} · Clinical hyperandrogenism: ${yn(c.androgen)} · PCOM on ultrasound: ${yn(c.ovaries)}. Self-reported, not a diagnosis.</p>`,
+    );
+  }
   const w = (d.body ?? []).filter((b) => b.weightKg);
   const c = (d.body ?? []).filter((b) => b.waistCm);
   if (w.length || c.length) {

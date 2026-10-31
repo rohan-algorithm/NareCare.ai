@@ -18,7 +18,7 @@ export default function CycleCalm() {
   const lang = profile?.language ?? 'en';
   const hi = lang === 'hi';
   const cycleDay = getCycleDay(logs);
-  const phase = getCyclePhase(cycleDay);
+  const phase = getCyclePhase(cycleDay, logs);
   const phaseInfo = phaseCopy(phase, lang);
   const prediction = predictNextPeriod(logs);
   const starts = logs.filter((l) => l.periodStatus === 'started' || l.periodStatus === 'flowing');

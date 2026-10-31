@@ -18,6 +18,7 @@ export function AgentFeed() {
   const log = useAppStore((s) => s.agentLog);
   const logs = useAppStore((s) => s.symptomLogs);
   const openPro = useAppStore((s) => s.openPro);
+  const undoAgent = useAppStore((s) => s.undoAgent);
 
   useEffect(() => {
     if (pro) runAutopilot();
@@ -72,10 +73,16 @@ export function AgentFeed() {
         </View>
         {todays.length ? (
           todays.map((a) => (
-            <Pressable key={a.id} disabled={!a.href} onPress={() => a.href && router.push(a.href as any)} style={styles.row}>
-              <Ionicons name="checkmark-circle" size={16} color="#3DDC97" />
-              <Text style={styles.rowText}>{hi ? a.textHi : a.text}</Text>
-              {a.href ? <Ionicons name="chevron-forward" size={14} color="rgba(255,255,255,0.5)" /> : null}
+            <Pressable key={a.id} disabled={!a.href} onPress={() => a.href && router.push(a.href as any)} style={[styles.row, a.undone && { opacity: 0.5 }]}>
+              <Ionicons name={a.undone ? 'arrow-undo' : 'checkmark-circle'} size={16} color={a.undone ? 'rgba(255,255,255,0.6)' : '#3DDC97'} />
+              <Text style={[styles.rowText, a.undone && { textDecorationLine: 'line-through' }]}>{hi ? a.textHi : a.text}</Text>
+              {a.undo && !a.undone ? (
+                <Pressable onPress={() => undoAgent(a.id)} hitSlop={8} style={styles.undo}>
+                  <Text style={styles.undoText}>{hi ? 'वापस' : 'Undo'}</Text>
+                </Pressable>
+              ) : a.href ? (
+                <Ionicons name="chevron-forward" size={14} color="rgba(255,255,255,0.5)" />
+              ) : null}
             </Pressable>
           ))
         ) : (
@@ -100,5 +107,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 9 },
   rowText: { flex: 1, fontFamily: fonts.bodyMedium, fontSize: 13, lineHeight: 18, color: '#fff' },
   blur: { opacity: 0.45 },
+  undo: { backgroundColor: 'rgba(255,255,255,0.14)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
+  undoText: { fontFamily: fonts.bodyBold, fontSize: 12, color: '#fff' },
   cta: { fontFamily: fonts.bodyBold, fontSize: 13, color: colors.blush, marginTop: 2 },
 });

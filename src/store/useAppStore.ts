@@ -101,7 +101,8 @@ type SetupDraft = Partial<UserProfile> & { step: number };
 export type ProReason = 'workout' | 'program' | 'coach' | 'lesson' | 'plate' | 'diet' | 'doctor_kit' | 'generic';
 
 /** Something the AI coach or the daily autopilot changed on her behalf. */
-export type AgentAction = { id: string; at: string; text: string; textHi: string; href?: string };
+export type AgentUndo = { kind: 'meal'; date: string; slot: string; prev: string | null } | { kind: 'move'; prev: Partial<MoveSettings> };
+export type AgentAction = { id: string; at: string; text: string; textHi: string; href?: string; undo?: AgentUndo; undone?: boolean };
 
 type AppState = {
   hydrated: boolean;
@@ -213,10 +214,14 @@ type AppState = {
   noteCoachUse: () => void;
   agentLog: AgentAction[];
   logAgent: (a: Omit<AgentAction, 'id' | 'at'>) => void;
+  undoAgent: (id: string) => void;
   autopilotDate: string | null;
   setAutopilotDate: (d: string) => void;
   pcosCheck: CheckResult | null;
   setPcosCheck: (r: CheckResult) => void;
+  /** Notifications show no health details on the lock screen. */
+  discreet: boolean;
+  setDiscreet: (on: boolean) => void;
 };
 
 const emptyDraft: SetupDraft = { step: 0, symptoms: [], allergies: [], goals: [] };
@@ -294,7 +299,7 @@ export const useAppStore = create<AppState>()(
       posts: SEED_POSTS,
       supplements: {
         date: today(),
-        items: { 'Inositol': false, 'Vitamin D': false, 'Omega-3': false, 'Spearmint tea': false },
+        items: {},
       },
       streakDays: 0,
       councilTodayDate: today(),
@@ -632,10 +637,8 @@ export const useAppStore = create<AppState>()(
         const d = today();
         let supplements = get().supplements;
         if (supplements.date !== d) {
-          supplements = {
-            date: d,
-            items: { 'Inositol': false, 'Vitamin D': false, 'Omega-3': false, 'Spearmint tea': false },
-          };
+          // New day: keep her own list, untick everything.
+          supplements = { date: d, items: Object.fromEntries(Object.keys(supplements.items).map((k) => [k, false])) };
         }
         set({
           supplements: {
@@ -648,10 +651,8 @@ export const useAppStore = create<AppState>()(
         const d = today();
         let supplements = get().supplements;
         if (supplements.date !== d) {
-          supplements = {
-            date: d,
-            items: { 'Inositol': false, 'Vitamin D': false, 'Omega-3': false, 'Spearmint tea': false },
-          };
+          // New day: keep her own list, untick everything.
+          supplements = { date: d, items: Object.fromEntries(Object.keys(supplements.items).map((k) => [k, false])) };
         }
         if (supplements.items[name] !== undefined) return;
         set({
@@ -700,10 +701,26 @@ export const useAppStore = create<AppState>()(
       },
       agentLog: [],
       logAgent: (a) => set({ agentLog: [{ ...a, id: `ag-${Date.now()}-${Math.round(Math.random() * 1e4)}`, at: new Date().toISOString() }, ...get().agentLog].slice(0, 40) }),
+      undoAgent: (id) => {
+        const a = get().agentLog.find((x) => x.id === id);
+        if (!a?.undo || a.undone) return;
+        if (a.undo.kind === 'meal') {
+          const key = `${a.undo.date}|${a.undo.slot}`;
+          const swaps = { ...get().mealSwaps };
+          if (a.undo.prev) swaps[key] = a.undo.prev;
+          else delete swaps[key];
+          set({ mealSwaps: swaps });
+        } else {
+          set({ moveSettings: { ...get().moveSettings, ...a.undo.prev } });
+        }
+        set({ agentLog: get().agentLog.map((x) => (x.id === id ? { ...x, undone: true } : x)) });
+      },
       autopilotDate: null,
       setAutopilotDate: (d) => set({ autopilotDate: d }),
       pcosCheck: null,
       setPcosCheck: (r) => set({ pcosCheck: r }),
+      discreet: false,
+      setDiscreet: (on) => set({ discreet: on }),
     }),
     {
       name: 'naricare-store-v3',
@@ -775,6 +792,7 @@ export const useAppStore = create<AppState>()(
         agentLog: s.agentLog,
         autopilotDate: s.autopilotDate,
         pcosCheck: s.pcosCheck,
+        discreet: s.discreet,
       }),
     }
   )

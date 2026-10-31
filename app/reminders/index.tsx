@@ -21,6 +21,8 @@ export default function Reminders() {
   const setReminderEnabled = useAppStore((s) => s.setReminderEnabled);
   const setAlarmsArmed = useAppStore((s) => s.setAlarmsArmed);
   const profile = useAppStore((s) => s.profile);
+  const discreet = useAppStore((s) => s.discreet);
+  const setDiscreet = useAppStore((s) => s.setDiscreet);
   const lang = profile?.language ?? 'en';
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState('');
@@ -74,10 +76,29 @@ export default function Reminders() {
           </Display>
           <Body style={{ color: colors.muted, marginTop: 8 }}>
             {lang === 'hi'
-              ? 'एक्सरसाइज़ अलार्म पर Move खोलें → Start → पूरा करें। फ़ोटो नहीं।'
-              : 'On exercise alarm open Move → Start → complete. No photo.'}
+              ? 'हर रिमाइंडर आपके आज के प्लान से बनता है और काम पूरा होते ही चुप हो जाता है।'
+              : 'Every reminder is built from today’s plan and goes quiet once the task is done.'}
           </Body>
         </Animated.View>
+
+        <Card tone="solid" style={{ marginTop: spacing.md }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View style={{ flex: 1, paddingRight: spacing.md }}>
+              <Title>{lang === 'hi' ? '🔒 गोपनीय नोटिफिकेशन' : '🔒 Discreet notifications'}</Title>
+              <Muted style={{ marginTop: 4 }}>
+                {lang === 'hi'
+                  ? 'लॉक स्क्रीन पर पीरियड, PCOS या वज़न की बात नहीं दिखेगी। बस “NariCare: खाने का समय”।'
+                  : 'No period, PCOS or weight words on your lock screen. Just “NariCare: meal time”.'}
+              </Muted>
+            </View>
+            <Switch
+              value={discreet}
+              onValueChange={setDiscreet}
+              trackColor={{ true: colors.blushDeep, false: colors.lineStrong }}
+              thumbColor={colors.white}
+            />
+          </View>
+        </Card>
 
         {reminders.map((r, i) => (
           <Animated.View key={r.key} entering={FadeInDown.delay(40 * i).duration(350)}>

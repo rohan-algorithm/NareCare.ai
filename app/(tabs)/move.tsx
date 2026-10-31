@@ -34,13 +34,14 @@ const LEVELS: [1 | 2 | 3, string, string][] = [
   [3, 'Advanced', 'एडवांस'],
 ];
 
-function workoutHref(p: { focus: Focus; minutes: number; seed: string; week: number; lowImpact: boolean; programId?: string; sessionKey?: string }) {
+function workoutHref(p: { focus: Focus; minutes: number; seed: string; week: number; lowImpact: boolean; programId?: string; sessionKey?: string; gentle?: boolean }) {
   const q = new URLSearchParams({
     focus: p.focus,
     min: String(p.minutes),
     seed: p.seed,
     week: String(p.week),
     low: p.lowImpact ? '1' : '0',
+    ...(p.gentle ? { gentle: '1' } : {}),
     ...(p.programId ? { program: p.programId } : {}),
     ...(p.sessionKey ? { session: p.sessionKey } : {}),
   });
@@ -88,8 +89,8 @@ export default function Move() {
   const basePlan = useMemo(() => planToday(settings, activeProgram, logs, mode), [settings, activeProgram, logs, mode]);
   const plan: PlannedSession = short ? { ...basePlan, minutes: 10, sessionKey: undefined } : basePlan;
   const workout = useMemo(
-    () => buildWorkout(plan.focus, { ...settings, minutes: plan.minutes, lowImpact: plan.lowImpact }, plan.seed, boostFor(plan.week), weightKg),
-    [plan.focus, plan.minutes, plan.lowImpact, plan.seed, plan.week, settings, weightKg],
+    () => buildWorkout(plan.focus, { ...settings, minutes: plan.minutes, lowImpact: plan.lowImpact, periodSafe: plan.gentle }, plan.seed, boostFor(plan.week), weightKg),
+    [plan.focus, plan.minutes, plan.lowImpact, plan.gentle, plan.seed, plan.week, settings, weightKg],
   );
   const preview = workout.steps.filter((s, i, a) => s.block === 'main' && a.findIndex((x) => x.exId === s.exId) === i).slice(0, 4);
   const href = workoutHref(plan);

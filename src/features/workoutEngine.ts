@@ -7,6 +7,8 @@ export type MovePrefs = {
   minutes: number;
   equipment: ('dumbbell' | 'band')[];
   lowImpact: boolean;
+  /** period or cramp day: no inversions, deep belly work or jumping */
+  periodSafe?: boolean;
 };
 
 export type Step = {
@@ -32,7 +34,7 @@ export const FOCUS_TITLE: Record<Focus, { en: string; hi: string }> = {
   lower: { en: 'Legs & glutes', hi: 'पैर और ग्लूट्स' },
   upper_core: { en: 'Arms, back & core', hi: 'हाथ, पीठ और कोर' },
   glute_core: { en: 'Glutes & core', hi: 'ग्लूट्स और कोर' },
-  cardio: { en: 'Fat-burn cardio', hi: 'फैट-बर्न कार्डियो' },
+  cardio: { en: 'Heart-pumping cardio', hi: 'दिल की धड़कन वाला कार्डियो' },
   yoga: { en: 'Yoga flow for PCOS', hi: 'PCOS के लिए योग फ्लो' },
   mobility: { en: 'Gentle stretch & breathe', hi: 'हल्का स्ट्रेच और साँस' },
 };
@@ -47,7 +49,10 @@ function rng(seed: string) {
   };
 }
 
+const PERIOD_AVOID = new Set(['legs-up', 'bow', 'down-dog', 'superman', 'leg-raise', 'flutter-kicks', 'bicycle', 'mountain-climbers', 'jumping-jacks', 'high-knees', 'butt-kicks']);
+
 function eligible(e: TrainerMove, p: MovePrefs): boolean {
+  if (p.periodSafe && PERIOD_AVOID.has(e.id)) return false;
   if (e.eq === 'dumbbell' && !p.equipment.includes('dumbbell')) return false;
   if (p.lowImpact && (e.impact || (e.kind === 'strength' && !e.kneeSafe))) return false;
   if (p.level === 1 && e.level > 1) return false;

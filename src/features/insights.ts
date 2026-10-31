@@ -1,3 +1,4 @@
+import { periodStarts } from '@/src/features/cycle';
 import { differenceInCalendarDays, parseISO, addDays, format } from 'date-fns';
 import type { SymptomLog } from '@/src/types';
 
@@ -90,18 +91,17 @@ export function buildInsights(logs: SymptomLog[], lang: 'en' | 'hi' = 'en'): Ins
   return insights.slice(0, 4);
 }
 
-/** Average cycle length from period starts; predict next start. */
+/**
+ * Average of the last 3 cycles predicts the next start. When cycles vary by more
+ * than a week (common in PCOS) the label gives a window, not a false exact date.
+ */
 export function predictNextPeriod(logs: SymptomLog[]): {
   nextDate: string | null;
   avgLength: number | null;
   label: string;
   labelHi: string;
 } {
-  const starts = logs
-    .filter((l) => l.periodStatus === 'started')
-    .map((l) => parseISO(l.logDate))
-    .sort((a, b) => a.getTime() - b.getTime());
-
+  const starts = periodStarts(logs).map((d) => parseISO(d));
   if (starts.length < 2) {
     return {
       nextDate: null,
@@ -110,14 +110,35 @@ export function predictNextPeriod(logs: SymptomLog[]): {
       labelHi: 'प्रेडिक्शन के लिए 2+ पीरियड स्टार्ट लॉग करें',
     };
   }
-
   const gaps: number[] = [];
-  for (let i = 1; i < starts.length; i++) {
-    gaps.push(differenceInCalendarDays(starts[i], starts[i - 1]));
+  for (let i = 1; i < starts.length; i++) gaps.push(differenceInCalendarDays(starts[i], starts[i - 1]));
+  const recentGaps = gaps.filter((g) => g >= 15).slice(-3);
+  if (!recentGaps.length) {
+    return { nextDate: null, avgLength: null, label: 'Log a few more cycles for prediction', labelHi: 'प्रेडिक्शन के लिए कुछ और साइकल लॉग करें' };
   }
-  const recentGaps = gaps.slice(-3);
   const avg = Math.round(recentGaps.reduce((a, b) => a + b, 0) / recentGaps.length);
-  const next = addDays(starts[starts.length - 1], avg);
+  const last = starts[starts.length - 1];
+  const lo = Math.min(...recentGaps);
+  const hi = Math.max(...recentGaps);
+  if (hi - lo > 7) {
+    const from = addDays(last, lo);
+    const to = addDays(last, hi);
+    return {
+      nextDate: format(from, 'yyyy-MM-dd'),
+      avgLength: avg,
+      label: `Cycles vary (${lo}–${hi} days): next period likely ${format(from, 'd MMM')} – ${format(to, 'd MMM')}`,
+      labelHi: `साइकल बदलते हैं (${lo}–${hi} दिन): अगला पीरियड ${format(from, 'd MMM')} – ${format(to, 'd MMM')} के बीच`,
+    };
+  }
+  const next = addDays(last, avg);
+  if (differenceInCalendarDays(new Date(), next) > 3) {
+    return {
+      nextDate: null,
+      avgLength: avg,
+      label: `Later than your usual ${avg}-day cycle (expected ~${format(next, 'd MMM')})`,
+      labelHi: `आपके सामान्य ${avg} दिन के साइकल से देर (अपेक्षित ~${format(next, 'd MMM')})`,
+    };
+  }
   return {
     nextDate: format(next, 'yyyy-MM-dd'),
     avgLength: avg,
@@ -128,10 +149,7 @@ export function predictNextPeriod(logs: SymptomLog[]): {
 
 /** Lengths between logged period starts, oldest first. */
 export function cycleLengths(logs: SymptomLog[]): { start: string; days: number }[] {
-  const starts = logs
-    .filter((l) => l.periodStatus === 'started')
-    .map((l) => l.logDate)
-    .sort();
+  const starts = periodStarts(logs);
   const out: { start: string; days: number }[] = [];
   for (let i = 1; i < starts.length; i++) {
     out.push({ start: starts[i], days: differenceInCalendarDays(parseISO(starts[i]), parseISO(starts[i - 1])) });

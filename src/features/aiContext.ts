@@ -56,7 +56,7 @@ export function buildAiContext(s: Source): AiContext {
   return {
     pcosCheck: s.pcosCheck ? { score: s.pcosCheck.score, band: s.pcosCheck.band, criteria: s.pcosCheck.criteria } : null,
     cycleDay,
-    phase: getCyclePhase(cycleDay),
+    phase: getCyclePhase(cycleDay, s.symptomLogs),
     labs: lab ? lab.findings.map((f) => ({ name: f.name, value: f.value, unit: f.unit, status: f.status })) : [],
     labDate: lab?.createdAt.slice(0, 10) ?? null,
     logsLast14: recent.length,

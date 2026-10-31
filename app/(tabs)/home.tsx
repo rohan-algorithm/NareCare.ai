@@ -20,7 +20,8 @@ import { boostFor, planToday } from '@/src/features/todayWorkout';
 import { buildWorkout } from '@/src/features/workoutEngine';
 import { dailyAiTip } from '@/src/features/aiCoach';
 import { useAppStore } from '@/src/store/useAppStore';
-import { getCycleDay, getCyclePhase, phaseCopy } from '@/src/features/cycle';
+import { cycleLabel, cycleStatus, getCycleDay, getCyclePhase } from '@/src/features/cycle';
+import { SafetyBanner } from '@/src/ui/SafetyBanner';
 import { primaryProblemToday } from '@/src/features/solveToday';
 import { greeting as greet } from '@/src/i18n/copy';
 
@@ -53,7 +54,7 @@ export default function Home() {
   const pro = useIsPro();
   const todayMove = useMemo(() => {
     const plan = planToday(moveSettings, activeProgram, logs);
-    return buildWorkout(plan.focus, { ...moveSettings, minutes: plan.minutes, lowImpact: plan.lowImpact }, plan.seed, boostFor(plan.week), profile?.weightKg);
+    return buildWorkout(plan.focus, { ...moveSettings, minutes: plan.minutes, lowImpact: plan.lowImpact, periodSafe: plan.gentle }, plan.seed, boostFor(plan.week), profile?.weightKg);
   }, [moveSettings, activeProgram, logs, profile?.weightKg]);
   const [arming, setArming] = useState(false);
   const lang = profile?.language ?? 'en';
@@ -77,8 +78,8 @@ export default function Home() {
   }, [hasSeenGuide, router]);
 
   const cycleDay = getCycleDay(logs);
-  const phase = getCyclePhase(cycleDay);
-  const phaseInfo = phaseCopy(phase, lang);
+  const phase = getCyclePhase(cycleDay, logs);
+  const cycle = useMemo(() => cycleStatus(logs), [logs]);
   const primary = useMemo(() => primaryProblemToday(phenotype, logs), [phenotype, logs]);
 
   const armAlarms = async () => {
@@ -247,9 +248,7 @@ export default function Home() {
             <Pressable onPress={() => router.push('/track')} style={styles.phasePill}>
               <Ionicons name="flower" size={13} color="#fff" />
               <Text style={styles.phaseText}>
-                {cycleDay
-                  ? `${hi ? 'दिन' : 'Day'} ${cycleDay} · ${phaseInfo.title}`
-                  : hi ? 'पीरियड लॉग करें, साइकल सिंक होगा' : 'Log your period to sync your cycle'}
+                {cycleLabel(logs, lang)}
               </Text>
             </Pressable>
             <Text style={styles.heroTitle}>
@@ -272,6 +271,8 @@ export default function Home() {
           />
         </LinearGradient>
       </Animated.View>
+
+      <SafetyBanner cycle={cycle} logs={logs} hi={hi} />
 
       <View style={{ marginTop: spacing.md, gap: 10 }}>
         {tasks.map((t, i) => (

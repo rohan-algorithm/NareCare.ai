@@ -85,6 +85,7 @@ export function useNudgeEngine() {
         s.profile !== prev.profile ||
         s.subscription !== prev.subscription ||
         s.alarmsArmed !== prev.alarmsArmed ||
+        s.discreet !== prev.discreet ||
         s.waterGlasses !== prev.waterGlasses
       )
         kick();

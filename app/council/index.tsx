@@ -61,7 +61,7 @@ export default function CouncilScreen() {
   }, [resetCouncilIfNeeded]);
 
   const cycleDay = getCycleDay(logs);
-  const phase = getCyclePhase(cycleDay);
+  const phase = getCyclePhase(cycleDay, logs);
   const todayAsks = useMemo(
     () =>
       buildTodayBoard({

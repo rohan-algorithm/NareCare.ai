@@ -54,7 +54,7 @@ export default function WorkoutPlayer() {
   useKeepAwake();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const params = useLocalSearchParams<{ focus: Focus; min: string; seed: string; week?: string; low?: string; program?: string; session?: string }>();
+  const params = useLocalSearchParams<{ focus: Focus; min: string; seed: string; week?: string; low?: string; program?: string; session?: string; gentle?: string }>();
   const settings = useAppStore((s) => s.moveSettings);
   const weightKg = useAppStore((s) => s.profile?.weightKg);
   const hi = useAppStore((s) => s.profile?.language) === 'hi';
@@ -68,7 +68,7 @@ export default function WorkoutPlayer() {
     () =>
       buildWorkout(
         params.focus ?? 'full',
-        { ...settings, minutes: Number(params.min ?? settings.minutes), lowImpact: params.low === '1' || settings.lowImpact },
+        { ...settings, minutes: Number(params.min ?? settings.minutes), lowImpact: params.low === '1' || settings.lowImpact, periodSafe: params.gentle === '1' },
         params.seed ?? localDate(),
         boostFor(Number(params.week ?? 1)),
         weightKg,
@@ -141,7 +141,13 @@ export default function WorkoutPlayer() {
         void Haptics.selectionAsync().catch(() => undefined);
         say(String(nl));
       }
-      if (phase === 'work' && ex?.uni && step && nl === Math.floor(step.work / 2)) say('Switch sides.', 'तरफ़ बदलें।');
+      const half = step ? Math.floor(step.work / 2) : -1;
+      if (phase === 'work' && ex?.uni && step && nl === half) say('Switch sides.', 'तरफ़ बदलें।');
+      else if (phase === 'work' && step && (ex?.kind === 'yoga' || ex?.kind === 'stretch') && nl > 4 && (step.work - nl) % 5 === 0) {
+        // Slow breathing through holds: in for 5, out for 5.
+        const inhale = ((step.work - nl) / 5) % 2 === 1;
+        say(inhale ? 'Breathe in.' : 'Breathe out.', inhale ? 'साँस लें।' : 'साँस छोड़ें।');
+      }
       if (nl > 0) {
         setLeft(nl);
         return;

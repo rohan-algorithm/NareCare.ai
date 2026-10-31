@@ -1,8 +1,8 @@
 import { localDate, nextSwap, planForDate, prefsFrom } from '@/src/features/mealPlan';
 import { waterGoal } from '@/src/features/water';
-import { isSubscriptionActive, useAppStore } from '@/src/store/useAppStore';
+import { isSubscriptionActive, useAppStore, type AgentUndo } from '@/src/store/useAppStore';
 
-export type AutoChange = { key: string; text: string; textHi: string; href?: string; apply?: () => void };
+export type AutoChange = { key: string; text: string; textHi: string; href?: string; apply?: () => void; undo?: AgentUndo };
 
 function daysAgo(n: number): string {
   const d = new Date();
@@ -30,6 +30,7 @@ export function planAutopilot(): AutoChange[] {
         textHi: `आपने पेट फूलना लॉग किया, इसलिए आज का डिनर अब ${next.nameHi}`,
         href: '/diet',
         apply: () => useAppStore.getState().swapMeal(today, 'dinner', next.id),
+        undo: { kind: 'meal', date: today, slot: 'dinner', prev: null },
       });
     }
   }
@@ -52,6 +53,7 @@ export function planAutopilot(): AutoChange[] {
       textHi: '3+ दिन से वर्कआउट नहीं: आसान शुरुआत के लिए अब 10 मिनट के सेशन',
       href: '/move',
       apply: () => useAppStore.getState().setMoveSettings({ minutes: 10 }),
+      undo: { kind: 'move', prev: { minutes: s.moveSettings.minutes } },
     });
   }
 
@@ -84,7 +86,7 @@ export function runAutopilot(): number {
   const changes = planAutopilot();
   for (const c of changes) {
     c.apply?.();
-    s.logAgent({ text: c.text, textHi: c.textHi, href: c.href });
+    s.logAgent({ text: c.text, textHi: c.textHi, href: c.href, undo: c.undo });
   }
   s.setAutopilotDate(today);
   return changes.length;
