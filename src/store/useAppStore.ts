@@ -407,10 +407,12 @@ export const useAppStore = create<AppState>()(
       noteDoctorKitExport: () => set({ doctorKitExports: get().doctorKitExports + 1 }),
       upsertSymptomLog: (log) => {
         const id = log.id ?? `${log.logDate}`;
-        const next = get().symptomLogs.filter((l) => l.logDate !== log.logDate);
+        const before = get().symptomLogs;
+        const next = before.filter((l) => l.logDate !== log.logDate);
         next.push({ ...log, id });
-        const streak = Math.min(30, (get().streakDays || 0) + 1);
-        set({ symptomLogs: next, streakDays: streak });
+        // Only today's first log counts toward the streak; back-filling past days doesn't.
+        const firstToday = log.logDate === today() && !before.some((l) => l.logDate === log.logDate);
+        set({ symptomLogs: next, streakDays: firstToday ? Math.min(30, (get().streakDays || 0) + 1) : get().streakDays });
       },
       toggleHabit: (key) => {
         get().resetHabitsIfNeeded();

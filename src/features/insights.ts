@@ -97,6 +97,9 @@ export function buildInsights(logs: SymptomLog[], lang: 'en' | 'hi' = 'en'): Ins
  */
 export function predictNextPeriod(logs: SymptomLog[]): {
   nextDate: string | null;
+  /** likely range to shade on a calendar */
+  windowStart?: string | null;
+  windowEnd?: string | null;
   avgLength: number | null;
   label: string;
   labelHi: string;
@@ -125,6 +128,8 @@ export function predictNextPeriod(logs: SymptomLog[]): {
     const to = addDays(last, hi);
     return {
       nextDate: format(from, 'yyyy-MM-dd'),
+      windowStart: format(from, 'yyyy-MM-dd'),
+      windowEnd: format(to, 'yyyy-MM-dd'),
       avgLength: avg,
       label: `Cycles vary (${lo}–${hi} days): next period likely ${format(from, 'd MMM')} – ${format(to, 'd MMM')}`,
       labelHi: `साइकल बदलते हैं (${lo}–${hi} दिन): अगला पीरियड ${format(from, 'd MMM')} – ${format(to, 'd MMM')} के बीच`,
@@ -141,6 +146,8 @@ export function predictNextPeriod(logs: SymptomLog[]): {
   }
   return {
     nextDate: format(next, 'yyyy-MM-dd'),
+    windowStart: format(addDays(next, -2), 'yyyy-MM-dd'),
+    windowEnd: format(addDays(next, 2), 'yyyy-MM-dd'),
     avgLength: avg,
     label: `Next period ~${format(next, 'd MMM')} · avg ${avg}-day cycle`,
     labelHi: `अगला पीरियड ~${format(next, 'd MMM')} · औसत ${avg} दिन`,

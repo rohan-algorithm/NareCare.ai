@@ -65,7 +65,8 @@ export function useCommunity() {
   }, []);
 
   useEffect(() => {
-    void refresh();
+    const id = setTimeout(() => void refresh(), 0);
+    return () => clearTimeout(id);
   }, [refresh]);
 
   const create = async (p: Pick<CommunityPost, 'category' | 'title' | 'body' | 'isAnonymous'>) => {
