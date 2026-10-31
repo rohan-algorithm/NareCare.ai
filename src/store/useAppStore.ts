@@ -5,8 +5,6 @@ import { format } from 'date-fns';
 
 import { derivePhenotype } from '@/src/features/phenotype';
 import { type ChatMessage } from '@/src/features/aiCoach';
-import { askCoach } from '@/src/features/aiClient';
-import { buildAiContext } from '@/src/features/aiContext';
 import type { Entitlement } from '@/src/features/billing';
 import { analyzeLabValues, type LabAnalysis } from '@/src/features/labAi';
 import { DEFAULT_REMINDERS, type ReminderPref } from '@/src/features/reminderDefaults';
@@ -98,6 +96,12 @@ export type SupplementLog = {
 
 type SetupDraft = Partial<UserProfile> & { step: number };
 
+/** Why the Go Pro sheet opened; sets its headline. */
+export type ProReason = 'workout' | 'program' | 'coach' | 'lesson' | 'plate' | 'diet' | 'doctor_kit' | 'generic';
+
+/** Something the AI coach or the daily autopilot changed on her behalf. */
+export type AgentAction = { id: string; at: string; text: string; textHi: string; href?: string };
+
 type AppState = {
   hydrated: boolean;
   hasSeenWelcome: boolean;
@@ -175,12 +179,14 @@ type AppState = {
   updateFoodPrefs: (patch: Partial<Pick<UserProfile, 'dietPreference' | 'cuisinePreference' | 'allergies' | 'dislikes' | 'livingContext'>>) => void;
   setLivingContext: (ctx: LivingContext) => void;
   setLanguage: (lang: 'en' | 'hi') => void;
-  addWater: () => void;
+  /** Adds (or with a negative n, removes) glasses for today. */
+  addWater: (n?: number) => void;
   resetWaterIfNeeded: () => void;
   resetHabitsIfNeeded: () => void;
   completeExercise: (exerciseId: string, durationMin: number) => void;
   chatBusy: boolean;
-  sendChat: (text: string) => Promise<void>;
+  appendChat: (m: ChatMessage) => void;
+  setChatBusy: (busy: boolean) => void;
   clearChat: () => void;
   saveLabAnalysis: (values: Record<string, number>) => LabAnalysis;
   setReminderEnabled: (key: string, enabled: boolean) => void;
@@ -196,6 +202,18 @@ type AppState = {
   resetScheduleIfNeeded: () => void;
   markScheduleDone: (key: string) => void;
   setAlarmsArmed: (on: boolean) => void;
+  proSheet: ProReason | null;
+  openPro: (reason: ProReason) => void;
+  closePro: () => void;
+  paywallSeen: boolean;
+  markPaywallSeen: () => void;
+  waterLog: Record<string, number>;
+  coachUsage: { date: string; count: number };
+  noteCoachUse: () => void;
+  agentLog: AgentAction[];
+  logAgent: (a: Omit<AgentAction, 'id' | 'at'>) => void;
+  autopilotDate: string | null;
+  setAutopilotDate: (d: string) => void;
 };
 
 const emptyDraft: SetupDraft = { step: 0, symptoms: [], allergies: [], goals: [] };
@@ -519,9 +537,13 @@ export const useAppStore = create<AppState>()(
           set({ habitDate: d, habitDoneToday: { focus: false, move: false }, badDayMode: false });
         }
       },
-      addWater: () => {
+      addWater: (n = 1) => {
         get().resetWaterIfNeeded();
-        set({ waterGlasses: Math.min(12, get().waterGlasses + 1), waterDate: today() });
+        const d = today();
+        const glasses = Math.max(0, Math.min(16, get().waterGlasses + n));
+        const cutoff = format(new Date(Date.now() - 60 * 864e5), 'yyyy-MM-dd');
+        const kept = Object.fromEntries(Object.entries(get().waterLog).filter(([k]) => k >= cutoff));
+        set({ waterGlasses: glasses, waterDate: d, waterLog: { ...kept, [d]: glasses } });
       },
       completeExercise: (exerciseId, durationMin) => {
         const log: ExerciseLog = {
@@ -538,25 +560,8 @@ export const useAppStore = create<AppState>()(
         });
       },
       chatBusy: false,
-      sendChat: async (text) => {
-        if (get().chatBusy) return;
-        const history = get().chat;
-        const userMsg: ChatMessage = {
-          id: `u-${Date.now()}`,
-          role: 'user',
-          text,
-          createdAt: new Date().toISOString(),
-        };
-        set({ chat: [...history, userMsg], chatBusy: true });
-        const replyText = await askCoach(text, get().profile, history, buildAiContext(get()));
-        const reply: ChatMessage = {
-          id: `a-${Date.now()}`,
-          role: 'assistant',
-          text: replyText,
-          createdAt: new Date().toISOString(),
-        };
-        set({ chat: [...get().chat, reply], chatBusy: false });
-      },
+      appendChat: (m) => set({ chat: [...get().chat, m] }),
+      setChatBusy: (busy) => set({ chatBusy: busy }),
       clearChat: () =>
         set({
           chat: [
@@ -679,6 +684,21 @@ export const useAppStore = create<AppState>()(
         });
       },
       setAlarmsArmed: (on) => set({ alarmsArmed: on }),
+      proSheet: null,
+      openPro: (reason) => set({ proSheet: reason }),
+      closePro: () => set({ proSheet: null }),
+      paywallSeen: false,
+      markPaywallSeen: () => set({ paywallSeen: true }),
+      waterLog: {},
+      coachUsage: { date: today(), count: 0 },
+      noteCoachUse: () => {
+        const u = get().coachUsage;
+        set({ coachUsage: u.date === today() ? { ...u, count: u.count + 1 } : { date: today(), count: 1 } });
+      },
+      agentLog: [],
+      logAgent: (a) => set({ agentLog: [{ ...a, id: `ag-${Date.now()}-${Math.round(Math.random() * 1e4)}`, at: new Date().toISOString() }, ...get().agentLog].slice(0, 40) }),
+      autopilotDate: null,
+      setAutopilotDate: (d) => set({ autopilotDate: d }),
     }),
     {
       name: 'naricare-store-v3',
@@ -744,6 +764,11 @@ export const useAppStore = create<AppState>()(
         hiddenPostIds: s.hiddenPostIds,
         reportedIds: s.reportedIds,
         doctorKitExports: s.doctorKitExports,
+        paywallSeen: s.paywallSeen,
+        waterLog: s.waterLog,
+        coachUsage: s.coachUsage,
+        agentLog: s.agentLog,
+        autopilotDate: s.autopilotDate,
       }),
     }
   )

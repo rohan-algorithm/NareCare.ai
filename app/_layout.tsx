@@ -16,6 +16,7 @@ import 'react-native-reanimated';
 
 import { colors } from '@/src/theme/tokens';
 import { useNudgeEngine } from '@/src/features/useNudgeEngine';
+import { ProSheetHost } from '@/src/ui/ProSheet';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -33,21 +34,16 @@ export default function RootLayout() {
     PlusJakartaSans_500Medium,
     PlusJakartaSans_700Bold,
   });
-  const [ready, setReady] = useState(false);
+  const [timedOut, setTimedOut] = useState(false);
+  const ready = Boolean(fontsLoaded || fontError || timedOut);
   useNudgeEngine();
 
   useEffect(() => {
-    if (fontsLoaded || fontError) {
-      hideSplash();
-      setReady(true);
-    }
-  }, [fontsLoaded, fontError]);
+    if (ready) hideSplash();
+  }, [ready]);
 
   useEffect(() => {
-    const t = setTimeout(() => {
-      hideSplash();
-      setReady(true);
-    }, 2000);
+    const t = setTimeout(() => setTimedOut(true), 2000);
     return () => clearTimeout(t);
   }, []);
 
@@ -88,6 +84,7 @@ export default function RootLayout() {
         <Stack.Screen name="cycle-calm/index" options={{ headerShown: true, title: 'Cycle calm', animation: 'slide_from_right' }} />
         <Stack.Screen name="guide/index" options={{ headerShown: true, title: 'Starter guide', animation: 'slide_from_right' }} />
       </Stack>
+      <ProSheetHost />
     </>
   );
 }

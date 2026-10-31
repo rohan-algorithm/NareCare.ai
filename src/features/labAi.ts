@@ -1,4 +1,4 @@
-import { LAB_MARKERS, statusFor, type LabMarker } from '@/src/content/labMarkers';
+import { LAB_MARKERS, statusFor } from '@/src/content/labMarkers';
 import type { Phenotype } from '@/src/types';
 
 export type LabFinding = {

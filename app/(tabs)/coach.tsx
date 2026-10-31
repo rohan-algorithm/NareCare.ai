@@ -15,7 +15,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useRouter } from 'expo-router';
+
 import { aiIsLive } from '@/src/features/aiClient';
+import type { ChatMessage } from '@/src/features/aiCoach';
+import { sendCoachMessage } from '@/src/features/coachAgent';
+import { FREE, useIsPro } from '@/src/features/pro';
+import { localDate } from '@/src/features/mealPlan';
 import { reportContent, type ReportReason } from '@/src/features/moderation';
 import { colors, fonts, gradients, radii, shadowCard, spacing } from '@/src/theme/tokens';
 import { useAppStore } from '@/src/store/useAppStore';
@@ -24,6 +30,9 @@ import { Ionicons, type IconName } from '@/src/ui/Icon';
 type Chip = { icon: IconName; label: string; prompt: string };
 
 const CHIPS_EN: Chip[] = [
+  { icon: 'water', label: 'Log 2 glasses', prompt: 'I drank 2 glasses of water' },
+  { icon: 'swap-horizontal', label: 'Swap my dinner', prompt: 'Dinner feels heavy today, swap it' },
+  { icon: 'play', label: 'Start 10-min yoga', prompt: 'Start a 10 min yoga workout' },
   { icon: 'restaurant', label: 'Mess food tips', prompt: 'Mess food tips?' },
   { icon: 'ice-cream', label: 'Night cravings', prompt: 'Cravings at night' },
   { icon: 'calendar', label: 'Irregular periods', prompt: 'Irregular periods' },
@@ -34,6 +43,9 @@ const CHIPS_EN: Chip[] = [
   { icon: 'moon', label: 'Bad day', prompt: 'Bad day — what now?' },
 ];
 const CHIPS_HI: Chip[] = [
+  { icon: 'water', label: '2 गिलास जोड़ें', prompt: 'मैंने 2 गिलास पानी पिया' },
+  { icon: 'swap-horizontal', label: 'डिनर बदलें', prompt: 'आज डिनर भारी लग रहा है, बदल दो' },
+  { icon: 'play', label: '10 मिनट योग', prompt: '10 मिनट योग शुरू करो' },
   { icon: 'restaurant', label: 'मेस खाना', prompt: 'मेस खाना टिप्स?' },
   { icon: 'ice-cream', label: 'रात की क्रेविंग', prompt: 'रात की क्रेविंग' },
   { icon: 'calendar', label: 'अनियमित पीरियड', prompt: 'अनियमित पीरियड' },
@@ -47,7 +59,10 @@ const CHIPS_HI: Chip[] = [
 export default function Coach() {
   const chat = useAppStore((s) => s.chat);
   const busy = useAppStore((s) => s.chatBusy);
-  const sendChat = useAppStore((s) => s.sendChat);
+  const router = useRouter();
+  const pro = useIsPro();
+  const usage = useAppStore((s) => s.coachUsage);
+  const freeLeft = Math.max(0, FREE.coachMessagesPerDay - (usage.date === localDate() ? usage.count : 0));
   const clearChat = useAppStore((s) => s.clearChat);
   const reportedIds = useAppStore((s) => s.reportedIds);
   const markReported = useAppStore((s) => s.markReported);
@@ -66,7 +81,7 @@ export default function Coach() {
     const t = (msg ?? text).trim();
     if (!t || busy) return;
     setText('');
-    void sendChat(t);
+    void sendCoachMessage(t);
   };
 
   const listen = async (id: string, body: string) => {
@@ -166,6 +181,18 @@ export default function Coach() {
             ) : (
               <View style={[styles.bubble, styles.aiBubble]}>
                 <Text style={styles.bubbleText}>{item.text}</Text>
+                {item.actions?.map((a: NonNullable<ChatMessage['actions']>[number], i: number) => (
+                  <Pressable
+                    key={i}
+                    disabled={!a.href}
+                    onPress={() => a.href && router.push(a.href as any)}
+                    style={[styles.actionChip, !a.ok && styles.actionChipFail]}
+                  >
+                    <Ionicons name={a.ok ? 'checkmark-circle' : 'alert-circle'} size={16} color={a.ok ? colors.good : colors.warn} />
+                    <Text style={styles.actionText}>{a.text}</Text>
+                    {a.href ? <Ionicons name="chevron-forward" size={14} color={colors.muted} /> : null}
+                  </Pressable>
+                ))}
                 <View style={styles.bubbleActions}>
                 <Pressable onPress={() => listen(item.id, item.text)} style={styles.listen} hitSlop={8}>
                   <Ionicons
@@ -193,6 +220,14 @@ export default function Coach() {
           }
         />
 
+        {!pro ? (
+          <Pressable onPress={() => useAppStore.getState().openPro('coach')} style={styles.freeBar}>
+            <Ionicons name="sparkles" size={14} color="#7A4A00" />
+            <Text style={styles.freeBarText}>
+              {hi ? `आज ${freeLeft} फ्री मैसेज बाकी · Pro में अनलिमिटेड` : `${freeLeft} free messages left today · unlimited with Pro`}
+            </Text>
+          </Pressable>
+        ) : null}
         <View style={styles.composer}>
           <TextInput
             value={text}
@@ -257,6 +292,11 @@ const styles = StyleSheet.create({
   bubbleText: { fontFamily: fonts.body, fontSize: 15, lineHeight: 22, color: colors.ink },
   thinking: { fontFamily: fonts.bodyMedium, fontSize: 14, color: colors.muted },
   listen: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  actionChip: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8, backgroundColor: '#EAF6F0', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 8 },
+  actionChipFail: { backgroundColor: colors.amberSoft },
+  actionText: { flex: 1, fontFamily: fonts.bodyBold, fontSize: 13, color: colors.ink },
+  freeBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: '#FFF1C9', paddingVertical: 7, marginHorizontal: spacing.md, borderRadius: 12, marginBottom: 6 },
+  freeBarText: { fontFamily: fonts.bodyBold, fontSize: 12, color: '#7A4A00' },
   bubbleActions: { flexDirection: 'row', alignItems: 'center', gap: 16, marginTop: 10 },
   reported: { fontFamily: fonts.bodyMedium, fontSize: 12, color: colors.muted },
   listenText: { fontFamily: fonts.bodyBold, fontSize: 12, color: colors.blushDeep },

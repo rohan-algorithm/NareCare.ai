@@ -13,6 +13,7 @@ export default function Gate() {
   const isAuthenticated = useAppStore((s) => s.isAuthenticated);
   const profile = useAppStore((s) => s.profile);
   const subscription = useAppStore((s) => s.subscription);
+  const paywallSeen = useAppStore((s) => s.paywallSeen);
   const applyEntitlement = useAppStore((s) => s.applyEntitlement);
   const [bootDone, setBootDone] = useState(false);
 
@@ -52,6 +53,7 @@ export default function Gate() {
   if (!hasSeenWelcome) return <Redirect href="/welcome" />;
   if (!isAuthenticated) return <Redirect href="/login" />;
   if (!profile) return <Redirect href="/setup" />;
-  if (!isSubscriptionActive(subscription)) return <Redirect href="/paywall" />;
+  // Freemium: the plans screen shows once after setup; after that Pro is offered in context.
+  if (!paywallSeen && !isSubscriptionActive(subscription)) return <Redirect href="/paywall" />;
   return <Redirect href="/home" />;
 }

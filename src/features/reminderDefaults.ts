@@ -1,5 +1,8 @@
 export type ReminderKey =
-  | 'morning_protein'
+  | 'meal_breakfast'
+  | 'meal_lunch'
+  | 'meal_snack'
+  | 'meal_dinner'
   | 'water'
   | 'symptom_log'
   | 'evening_move'
@@ -18,32 +21,53 @@ export type ReminderPref = {
   /** In-app destination when tapping the schedule row */
   href: string;
   kind: 'meal' | 'water' | 'log' | 'move' | 'ritual' | 'sleep';
+  /** meal reminders: which slot of today's plan to name */
+  slot?: 'breakfast' | 'midMorning' | 'lunch' | 'evening' | 'dinner';
+  /** water reminders repeat every `everyHours` from `hour` until `untilHour` */
+  untilHour?: number;
+  everyHours?: number;
 };
 
 export const DEFAULT_REMINDERS: ReminderPref[] = [
   {
-    key: 'morning_protein',
-    title: 'Protein breakfast',
-    titleHi: 'प्रोटीन नाश्ता',
-    body: 'Start with eggs / paneer / dahi before carbs.',
-    bodyHi: 'कार्ब से पहले अंडे / पनीर / दही।',
+    key: 'meal_breakfast',
+    title: 'Breakfast',
+    titleHi: 'नाश्ता',
+    body: 'Today’s protein breakfast, from your plan.',
+    bodyHi: 'आज का प्रोटीन नाश्ता, आपके प्लान से।',
     hour: 8,
-    minute: 0,
+    minute: 30,
     enabled: true,
     href: '/diet',
     kind: 'meal',
+    slot: 'breakfast',
   },
   {
     key: 'water',
-    title: 'Water check',
-    titleHi: 'पानी चेक',
-    body: '2 glasses now — insulin loves hydration.',
-    bodyHi: 'अभी 2 गिलास — इंसुलिन हाइड्रेशन पसंद करता है।',
-    hour: 11,
-    minute: 0,
+    title: 'Water',
+    titleHi: 'पानी',
+    body: 'Every 2 hours, with how much is left today.',
+    bodyHi: 'हर 2 घंटे, आज कितना बाकी है उसके साथ।',
+    hour: 9,
+    minute: 30,
+    untilHour: 19,
+    everyHours: 2,
     enabled: true,
     href: '/home',
     kind: 'water',
+  },
+  {
+    key: 'meal_lunch',
+    title: 'Lunch',
+    titleHi: 'लंच',
+    body: 'Your lunch for today, plate method.',
+    bodyHi: 'आज का लंच, प्लेट तरीके से।',
+    hour: 13,
+    minute: 15,
+    enabled: true,
+    href: '/diet',
+    kind: 'meal',
+    slot: 'lunch',
   },
   {
     key: 'symptom_log',
@@ -56,6 +80,19 @@ export const DEFAULT_REMINDERS: ReminderPref[] = [
     enabled: true,
     href: '/track',
     kind: 'log',
+  },
+  {
+    key: 'meal_snack',
+    title: 'Evening snack',
+    titleHi: 'शाम का स्नैक',
+    body: 'A smart snack before the 6 pm craving hits.',
+    bodyHi: '6 बजे की क्रेविंग से पहले एक समझदार स्नैक।',
+    hour: 16,
+    minute: 30,
+    enabled: true,
+    href: '/diet',
+    kind: 'meal',
+    slot: 'evening',
   },
   {
     key: 'spearmint',
@@ -80,6 +117,19 @@ export const DEFAULT_REMINDERS: ReminderPref[] = [
     enabled: true,
     href: '/move?start=1',
     kind: 'move',
+  },
+  {
+    key: 'meal_dinner',
+    title: 'Dinner',
+    titleHi: 'डिनर',
+    body: 'Light, early dinner from your plan.',
+    bodyHi: 'हल्का, जल्दी डिनर, आपके प्लान से।',
+    hour: 19,
+    minute: 45,
+    enabled: true,
+    href: '/diet',
+    kind: 'meal',
+    slot: 'dinner',
   },
   {
     key: 'sleep_wind_down',

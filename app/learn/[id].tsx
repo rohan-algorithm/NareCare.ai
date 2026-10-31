@@ -8,6 +8,7 @@ import { Screen } from '@/src/ui/Screen';
 import { Button } from '@/src/ui/Button';
 import { Ionicons } from '@/src/ui/Icon';
 import { colors, fonts, shadowCard, spacing } from '@/src/theme/tokens';
+import { sendCoachMessage } from '@/src/features/coachAgent';
 import { useAppStore } from '@/src/store/useAppStore';
 import { LESSON_BY_ID, LESSONS, WEEK_THEMES } from '@/src/content/academy';
 
@@ -18,7 +19,6 @@ export default function LessonScreen() {
   const hi = useAppStore((s) => s.profile?.language) === 'hi';
   const done = useAppStore((s) => s.lessonsDone);
   const completeLesson = useAppStore((s) => s.completeLesson);
-  const sendChat = useAppStore((s) => s.sendChat);
   const [speaking, setSpeaking] = useState(false);
   useEffect(() => () => void Speech.stop(), []);
 
@@ -78,7 +78,7 @@ export default function LessonScreen() {
         </View>
         <Pressable
           onPress={() => {
-            void sendChat(hi ? `"${lesson.title.hi}" के बारे में मेरे लिए समझाएँ` : `Explain "${lesson.title.en}" for my situation`);
+            void sendCoachMessage(hi ? `"${lesson.title.hi}" के बारे में मेरे लिए समझाएँ` : `Explain "${lesson.title.en}" for my situation`);
             router.push('/coach' as any);
           }}
           style={styles.ask}

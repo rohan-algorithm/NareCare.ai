@@ -1,9 +1,9 @@
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
-import { AppState } from 'react-native';
+import { Alert, AppState } from 'react-native';
 
 import { getNotifications, rebuildNudges } from '@/src/features/reminders';
-import { isSubscriptionActive, useAppStore } from '@/src/store/useAppStore';
+import { useAppStore } from '@/src/store/useAppStore';
 
 export function useNudgeEngine() {
   const router = useRouter();
@@ -22,18 +22,40 @@ export function useNudgeEngine() {
           shouldSetBadge: false,
         }),
       });
-      const go = (n: { request: { content: { data?: Record<string, unknown> | null } } }) => {
-        const url = n.request.content.data?.url;
-        if (typeof url !== 'string') return;
-        const paid = isSubscriptionActive(useAppStore.getState().subscription);
-        setTimeout(() => router.push((paid ? url : '/') as any), 600);
+      const handle = (r: import('expo-notifications').NotificationResponse) => {
+        const data = r.notification.request.content.data ?? {};
+        const st = useAppStore.getState();
+        const hi = st.profile?.language === 'hi';
+        const done = (msg: string) => {
+          void N.dismissNotificationAsync(r.notification.request.identifier).catch(() => undefined);
+          setTimeout(() => {
+            router.push('/home');
+            Alert.alert(msg);
+          }, 600);
+        };
+        switch (r.actionIdentifier) {
+          case 'water1':
+          case 'water2': {
+            const n = r.actionIdentifier === 'water2' ? 2 : 1;
+            st.addWater(n);
+            const g = useAppStore.getState().waterGlasses;
+            return done(hi ? `💧 ${n} गिलास जोड़ा · आज ${g}` : `💧 Added ${n} · ${g} glasses today`);
+          }
+          case 'ate':
+            if (typeof data.date === 'string' && typeof data.slot === 'string') st.markMeal(`${data.date}|${data.slot}`, 'ate');
+            return done(hi ? '✓ खाना लॉग हुआ' : '✓ Meal logged');
+          default: {
+            const url = data.url;
+            if (typeof url === 'string') setTimeout(() => router.push(url as any), 600);
+          }
+        }
       };
       const last = await N.getLastNotificationResponseAsync();
       if (last?.notification && !cancelled) {
-        go(last.notification);
+        handle(last);
         await N.clearLastNotificationResponseAsync();
       }
-      sub = N.addNotificationResponseReceivedListener((r) => go(r.notification));
+      sub = N.addNotificationResponseReceivedListener(handle);
     })();
     return () => {
       cancelled = true;
@@ -63,7 +85,7 @@ export function useNudgeEngine() {
         s.profile !== prev.profile ||
         s.subscription !== prev.subscription ||
         s.alarmsArmed !== prev.alarmsArmed ||
-        (s.waterGlasses >= 8) !== (prev.waterGlasses >= 8)
+        s.waterGlasses !== prev.waterGlasses
       )
         kick();
     });

@@ -5,6 +5,8 @@ export type ChatMessage = {
   role: 'user' | 'assistant';
   text: string;
   createdAt: string;
+  /** What the coach did in the app while answering. */
+  actions?: { text: string; href?: string; ok: boolean }[];
 };
 
 const DISCLAIMER =

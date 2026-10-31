@@ -55,8 +55,8 @@ const TERMS: Point[] = [
   },
   {
     icon: 'videocam-outline',
-    en: ['Videos and attributions', 'Recipe and exercise videos open on YouTube and belong to their creators. Exercise illustrations and steps: RepDB (repdb.co). Move animations: IconScout & LottieFiles licenses.'],
-    hi: ['वीडियो और श्रेय', 'रेसिपी और एक्सरसाइज़ वीडियो YouTube पर खुलते हैं और उनके निर्माताओं के हैं। एक्सरसाइज़ चित्र और स्टेप्स: RepDB (repdb.co)। मूव एनिमेशन: IconScout और LottieFiles लाइसेंस।'],
+    en: ['Videos and attributions', 'Recipe and exercise videos open on YouTube and belong to their creators. Exercise animations are NariCare’s own illustrated trainer.'],
+    hi: ['वीडियो और श्रेय', 'रेसिपी और एक्सरसाइज़ वीडियो YouTube पर खुलते हैं और उनके निर्माताओं के हैं। एक्सरसाइज़ एनिमेशन NariCare की अपनी ट्रेनर हैं।'],
   },
 ];
 

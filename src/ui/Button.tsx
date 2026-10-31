@@ -31,10 +31,10 @@ export function Button({ label, onPress, variant = 'primary', style, disabled }:
       accessibilityRole="button"
       disabled={disabled}
       onPressIn={() => {
-        scale.value = withSpring(0.97, { damping: 18, stiffness: 320 });
+        scale.set(withSpring(0.97, { damping: 18, stiffness: 320 }));
       }}
       onPressOut={() => {
-        scale.value = withSpring(1);
+        scale.set(withSpring(1));
       }}
       onPress={() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => undefined);

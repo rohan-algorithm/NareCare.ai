@@ -89,8 +89,9 @@ export default function Reminders() {
                     {reminderBody(r, lang === 'hi' ? 'hi' : 'en')}
                   </Muted>
                   <Text style={styles.time}>
-                    {formatAlarmTime(r.hour, r.minute)}{' '}
-                    {lang === 'hi' ? 'रोज़' : 'daily'}
+                    {r.untilHour
+                      ? `${formatAlarmTime(r.hour, r.minute)} – ${formatAlarmTime(r.untilHour, r.minute)} · ${lang === 'hi' ? `हर ${r.everyHours ?? 2} घंटे` : `every ${r.everyHours ?? 2} h`}`
+                      : `${formatAlarmTime(r.hour, r.minute)} ${lang === 'hi' ? 'रोज़' : 'daily'}`}
                   </Text>
                 </View>
                 <Switch

@@ -12,6 +12,7 @@ import { SAMPLE_LAB_VALUES } from '@/src/features/labAi';
 import { labScanAvailable, scanLabReport, toMarkerValues } from '@/src/features/labOcr';
 import { colors, fonts, gradients, shadowCard, spacing } from '@/src/theme/tokens';
 import { isSubscriptionActive, useAppStore } from '@/src/store/useAppStore';
+import { sendCoachMessage } from '@/src/features/coachAgent';
 
 const FIELDS: { key: string; en: string; hi: string; unit: string }[] = [
   { key: 'lh', en: 'LH', hi: 'LH', unit: 'mIU/mL' },
@@ -37,7 +38,6 @@ export default function Labs() {
   const profile = useAppStore((s) => s.profile);
   const subscription = useAppStore((s) => s.subscription);
   const freeDecodeUsed = useAppStore((s) => s.freeDecodeUsed);
-  const sendChat = useAppStore((s) => s.sendChat);
   const [busy, setBusy] = useState(false);
   const [manual, setManual] = useState(!labScanAvailable);
   const [form, setForm] = useState<Record<string, string>>({});
@@ -84,7 +84,7 @@ export default function Labs() {
   };
 
   const askAi = () => {
-    void sendChat(hi ? 'मेरी लेटेस्ट लैब रिपोर्ट समझाएँ' : 'Explain my latest lab report');
+    void sendCoachMessage(hi ? 'मेरी लेटेस्ट लैब रिपोर्ट समझाएँ' : 'Explain my latest lab report');
     router.push('/coach' as any);
   };
 

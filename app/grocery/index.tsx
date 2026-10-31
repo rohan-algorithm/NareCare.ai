@@ -6,7 +6,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Screen } from '@/src/ui/Screen';
 import { Card } from '@/src/ui/Card';
 import { Body, Display, Label, Muted, Title } from '@/src/ui/Typography';
-import { colors, fonts, radii, spacing } from '@/src/theme/tokens';
+import { colors, fonts, spacing } from '@/src/theme/tokens';
 import { useAppStore } from '@/src/store/useAppStore';
 import { buildGroceryList } from '@/src/features/grocery';
 import { livingContextLabel } from '@/src/content/meals';

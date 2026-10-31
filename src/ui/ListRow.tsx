@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View, ViewStyle } from 'react-native';
 
 import { Muted, Title } from '@/src/ui/Typography';
-import { colors, fonts, radii, spacing } from '@/src/theme/tokens';
+import { colors, fonts, spacing } from '@/src/theme/tokens';
 
 type Props = {
   title: string;

@@ -29,12 +29,17 @@ export default function Paywall() {
   const profile = useAppStore((s) => s.profile);
   const startTrial = useAppStore((s) => s.startTrial);
   const applyEntitlement = useAppStore((s) => s.applyEntitlement);
+  const markPaywallSeen = useAppStore((s) => s.markPaywallSeen);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(billingConfigured);
   const [busy, setBusy] = useState(false);
   const [selected, setSelected] = useState<PlanType>('annual');
   const hi = profile?.language === 'hi';
   const focus = phenotypeLabel(profile?.phenotype ?? 'mixed', hi ? 'hi' : 'en');
+
+  useEffect(() => {
+    markPaywallSeen();
+  }, [markPaywallSeen]);
 
   useEffect(() => {
     if (!billingConfigured) return;
@@ -120,7 +125,17 @@ export default function Paywall() {
   return (
     <Screen scroll variant="immersive">
       <Animated.View entering={FadeInDown.duration(400)}>
-        <BrandMark size={34} showWordmark />
+        <View style={styles.topRow}>
+          <BrandMark size={34} showWordmark />
+          <Pressable
+            onPress={() => (router.canGoBack() ? router.back() : router.replace('/home'))}
+            hitSlop={12}
+            style={styles.close}
+            accessibilityLabel={hi ? 'बंद करें' : 'Close'}
+          >
+            <Ionicons name="close" size={20} color={colors.ink} />
+          </Pressable>
+        </View>
         <LinearGradient colors={[...gradients.hero]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
           <Text style={styles.kicker}>{hi ? 'आपका 8-हफ्ते का प्लान तैयार' : 'Your 8-week plan is ready'}</Text>
           <Text style={styles.heroTitle}>
@@ -171,6 +186,9 @@ export default function Paywall() {
       )}
 
       <Button label={cta} onPress={subscribe} disabled={busy || loading} style={{ marginTop: spacing.lg }} />
+      <Pressable onPress={() => router.replace('/home')} hitSlop={8} style={{ alignSelf: 'center', marginTop: 12 }}>
+        <Text style={styles.linkMuted}>{hi ? 'अभी फ्री वर्ज़न इस्तेमाल करें' : 'Continue with the free version'}</Text>
+      </Pressable>
       <Text style={styles.fine}>
         {hasTrial
           ? hi
@@ -209,6 +227,8 @@ export default function Paywall() {
 }
 
 const styles = StyleSheet.create({
+  topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  close: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(28,26,34,0.07)', alignItems: 'center', justifyContent: 'center' },
   hero: { marginTop: spacing.md, borderRadius: 28, padding: spacing.lg, gap: 8, ...shadowCard, shadowColor: '#E24B5A', shadowOpacity: 0.3 },
   kicker: { fontFamily: fonts.bodyBold, fontSize: 12, letterSpacing: 0.6, textTransform: 'uppercase', color: 'rgba(255,255,255,0.8)' },
   heroTitle: { fontFamily: fonts.displayBold, fontSize: 26, lineHeight: 32, color: '#fff', letterSpacing: -0.6 },

@@ -1,18 +1,19 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Linking, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import Svg, { Circle } from 'react-native-svg';
 
 import { Screen } from '@/src/ui/Screen';
 import { Disclaimer } from '@/src/ui/Disclaimer';
-import { ExerciseAnim } from '@/src/ui/ExerciseAnim';
+import { Trainer } from '@/src/ui/Trainer';
+import { requirePro, useIsPro } from '@/src/features/pro';
 import { Ionicons, type IconName } from '@/src/ui/Icon';
 import { colors, fonts, shadowCard, spacing } from '@/src/theme/tokens';
 import { useAppStore } from '@/src/store/useAppStore';
 import { PROGRAMS, PROGRAM_BY_ID, sessionKeys } from '@/src/content/programs';
-import { CATALOG } from '@/src/content/workoutCatalog';
+import { MOVES } from '@/src/content/trainerMoves';
 import { buildWorkout, FOCUS_TITLE, type Focus } from '@/src/features/workoutEngine';
 import { boostFor, planToday, type PlannedSession } from '@/src/features/todayWorkout';
 import { localDate } from '@/src/features/mealPlan';
@@ -66,6 +67,7 @@ function WeekRing({ minutes }: { minutes: number }) {
 
 export default function Move() {
   const router = useRouter();
+  const pro = useIsPro();
   const { start } = useLocalSearchParams<{ start?: string }>();
   const hi = useAppStore((s) => s.profile?.language) === 'hi';
   const goals = useAppStore((s) => s.profile?.goals ?? []);
@@ -154,8 +156,7 @@ export default function Move() {
           <View style={styles.wrap}>
             {(
               [
-                ['dumbbell', 'Dumbbells', 'डंबल'],
-                ['band', 'Resistance band', 'रेज़िस्टेंस बैंड'],
+                ['dumbbell', 'Dumbbells or water bottles', 'डम्बल या पानी की बोतलें'],
               ] as const
             ).map(([id, en, h]) => (
               <Pill
@@ -206,7 +207,7 @@ export default function Move() {
           </View>
           <View style={styles.thumbs}>
             {preview.map((s) => (
-              <ExerciseAnim key={s.exId} exId={s.exId} style={styles.heroThumb} />
+              <Trainer key={s.exId} moveId={s.exId} style={styles.heroThumb} />
             ))}
           </View>
           <Pressable onPress={() => router.push(href as any)} style={styles.startBtn}>
@@ -245,11 +246,21 @@ export default function Move() {
           <Pressable
             key={p.id}
             onPress={() => {
-              startProgram(p.id);
-              setBrowsing(false);
+              const go = () => {
+                startProgram(p.id);
+                setBrowsing(false);
+              };
+              if (p.id === recommended) go();
+              else requirePro('program', go);
             }}
             style={[styles.card, p.id === recommended && styles.recommended]}
           >
+            {!pro && p.id !== recommended ? (
+              <View style={styles.proTag}>
+                <Ionicons name="lock-closed" size={11} color="#7A4A00" />
+                <Text style={styles.proTagText}>PRO</Text>
+              </View>
+            ) : null}
             {p.id === recommended ? <Text style={styles.recBadge}>{hi ? 'आपके लक्ष्य के लिए सुझाया' : 'Recommended for your goal'}</Text> : null}
             <Text style={styles.progTitle}>{hi ? p.title.hi : p.title.en}</Text>
             <Text style={styles.small}>{hi ? p.pitch.hi : p.pitch.en}</Text>
@@ -281,7 +292,7 @@ export default function Move() {
         <Ionicons name="library" size={22} color="#7C5CFF" />
         <View style={{ flex: 1 }}>
           <Text style={styles.progTitle}>{hi ? 'एक्सरसाइज़ लाइब्रेरी' : 'Exercise library'}</Text>
-          <Text style={styles.small}>{hi ? `${CATALOG.length} एक्सरसाइज़, डेमो और स्टेप्स के साथ` : `${CATALOG.length} exercises with demos and steps`}</Text>
+          <Text style={styles.small}>{hi ? `${MOVES.length} एक्सरसाइज़ और योगासन, ट्रेनर डेमो के साथ` : `${MOVES.length} exercises & yoga poses, demonstrated by your trainer`}</Text>
         </View>
         <Ionicons name="chevron-forward" size={18} color={colors.muted} />
       </Pressable>
@@ -317,9 +328,6 @@ export default function Move() {
         </>
       )}
 
-      <Pressable onPress={() => void Linking.openURL('https://repdb.co')}>
-        <Text style={styles.credit}>Exercise data by RepDB (repdb.co)</Text>
-      </Pressable>
       <Disclaimer lang={hi ? 'hi' : 'en'} />
     </Screen>
   );
@@ -375,7 +383,9 @@ const styles = StyleSheet.create({
   heroMeta: { flexDirection: 'row', gap: 14 },
   heroMetaText: { fontFamily: fonts.bodyBold, fontSize: 13, color: '#fff' },
   thumbs: { flexDirection: 'row', gap: 8, marginTop: 4 },
-  heroThumb: { flex: 1, aspectRatio: 1, borderRadius: 14 },
+  heroThumb: { flex: 1, aspectRatio: 1, borderRadius: 14, backgroundColor: '#FFF3F0', overflow: 'hidden' },
+  proTag: { position: 'absolute', top: 12, right: 12, flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: '#FFC857', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3, zIndex: 2 },
+  proTagText: { fontFamily: fonts.bodyBold, fontSize: 10.5, color: '#7A4A00', letterSpacing: 0.4 },
   startBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#fff', borderRadius: 999, paddingVertical: 14, marginTop: 6 },
   startText: { fontFamily: fonts.bodyBold, fontSize: 16, color: colors.blushDeep },
   heroAlt: { flexDirection: 'row', justifyContent: 'space-around', marginTop: 4 },
@@ -393,5 +403,4 @@ const styles = StyleSheet.create({
   quickTitle: { fontFamily: fonts.bodyBold, fontSize: 14, color: colors.ink },
   histRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 7 },
   histTitle: { fontFamily: fonts.bodyBold, fontSize: 14, color: colors.ink },
-  credit: { fontFamily: fonts.body, fontSize: 11, color: colors.muted, textAlign: 'center', marginTop: spacing.lg, textDecorationLine: 'underline' },
 });

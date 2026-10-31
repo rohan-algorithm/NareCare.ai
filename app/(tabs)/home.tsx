@@ -12,6 +12,9 @@ import { colors, fonts, gradients, shadowCard, spacing } from '@/src/theme/token
 import { Ionicons, IconBubble, type IconName } from '@/src/ui/Icon';
 import { ProgressRing } from '@/src/ui/ProgressRing';
 import { TrialWins } from '@/src/ui/TrialWins';
+import { WaterCard } from '@/src/ui/WaterCard';
+import { AgentFeed } from '@/src/ui/AgentFeed';
+import { useIsPro } from '@/src/features/pro';
 import { nextLesson, programWeek } from '@/src/content/academy';
 import { boostFor, planToday } from '@/src/features/todayWorkout';
 import { buildWorkout } from '@/src/features/workoutEngine';
@@ -45,6 +48,8 @@ export default function Home() {
   const ttcOn = useAppStore((s) => s.ttc.on);
   const moveSettings = useAppStore((s) => s.moveSettings);
   const activeProgram = useAppStore((s) => s.activeProgram);
+  const openPro = useAppStore((s) => s.openPro);
+  const pro = useIsPro();
   const todayMove = useMemo(() => {
     const plan = planToday(moveSettings, activeProgram, logs);
     return buildWorkout(plan.focus, { ...moveSettings, minutes: plan.minutes, lowImpact: plan.lowImpact }, plan.seed, boostFor(plan.week), profile?.weightKg);
@@ -149,7 +154,7 @@ export default function Home() {
       sub: hi ? 'प्रोटीन नाश्ता + आपके खाने के हिसाब से' : 'Protein breakfast, matched to your kitchen',
       href: '/diet',
       done:
-        !!scheduleDone['morning_protein'] ||
+        !!scheduleDone['meal_breakfast'] ||
         Object.entries(mealMarks).some(([k, v]) => k.startsWith(`${localToday}|`) && v === 'ate'),
       fg: '#C4453A',
       bg: '#FFE9E5',
@@ -206,6 +211,12 @@ export default function Home() {
             {profile?.name ?? (hi ? 'आप' : 'Friend')}
           </Text>
         </View>
+        {!pro ? (
+          <Pressable onPress={() => openPro('generic')} style={styles.proBtn} hitSlop={6} accessibilityLabel="Go Pro">
+            <Ionicons name="ribbon" size={18} color="#7A4A00" />
+            <Text style={styles.proBtnText}>PRO</Text>
+          </Pressable>
+        ) : null}
         <View style={styles.streakPill}>
           <Ionicons name="flame" size={16} color="#E8801A" />
           <Text style={styles.streakText}>{streakDays}</Text>
@@ -271,6 +282,10 @@ export default function Home() {
           </Animated.View>
         ))}
       </View>
+
+      <WaterCard />
+
+      <AgentFeed />
 
       {lesson ? (
         <Pressable onPress={() => router.push(`/learn/${lesson.id}` as any)} style={styles.lessonCard}>
@@ -451,6 +466,8 @@ const styles = StyleSheet.create({
   tile: { ...CARD, width: '48.5%', padding: 14, gap: 10, minHeight: 100 },
   tileLabel: { fontFamily: fonts.bodyBold, fontSize: 14, color: colors.ink },
   tileSub: { fontFamily: fonts.body, fontSize: 11.5, lineHeight: 16, color: colors.muted, marginTop: 2 },
+  proBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, height: 42, paddingHorizontal: 12, borderRadius: 21, backgroundColor: '#FFC857' },
+  proBtnText: { fontFamily: fonts.bodyBold, fontSize: 13, color: '#7A4A00', letterSpacing: 0.4 },
   streakPill: { ...CARD, flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, height: 42, borderRadius: 21 },
   streakText: { fontFamily: fonts.displayBold, fontSize: 15, color: colors.ink },
   task: { ...CARD, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 },

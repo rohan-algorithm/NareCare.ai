@@ -29,10 +29,8 @@ export default function WeeklyReview() {
   const insights = buildInsights(logs, lang).slice(0, 2);
   const prediction = predictNextPeriod(logs);
   const mealsLogged = Object.keys(mealMarks).length;
-  const workouts = exerciseLogs.filter((e) => {
-    const d = new Date(e.date);
-    return Date.now() - d.getTime() < 7 * 86400000;
-  }).length;
+  const [now] = useState(() => Date.now());
+  const workouts = exerciseLogs.filter((e) => now - new Date(e.date).getTime() < 7 * 86400000).length;
   const crashWeek = logs.filter((l) => l.energyCrash).length;
   const [aiSummary, setAiSummary] = useState<string | null>(null);
   const [aiBusy, setAiBusy] = useState(false);
@@ -42,7 +40,7 @@ export default function WeeklyReview() {
     const ctx = buildAiContext(useAppStore.getState());
     try {
       const text = aiIsLive
-        ? await askCoach(hi ? WEEKLY_PROMPT_HI : WEEKLY_PROMPT, profile, [], ctx)
+        ? (await askCoach(hi ? WEEKLY_PROMPT_HI : WEEKLY_PROMPT, profile, [], ctx)).text
         : localWeeklySummary(ctx, hi);
       setAiSummary(text);
     } catch {

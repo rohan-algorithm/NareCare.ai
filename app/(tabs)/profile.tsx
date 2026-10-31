@@ -11,6 +11,8 @@ import { Label, Muted } from '@/src/ui/Typography';
 import { colors, fonts, radii, spacing } from '@/src/theme/tokens';
 import { phenotypeLabel } from '@/src/features/phenotype';
 import { useAppStore } from '@/src/store/useAppStore';
+import { useIsPro } from '@/src/features/pro';
+import { Ionicons } from '@/src/ui/Icon';
 
 type Link = {
   href: string;
@@ -108,6 +110,10 @@ export default function Profile() {
   const exerciseLogs = useAppStore((s) => s.exerciseLogs);
   const signOut = useAppStore((s) => s.signOut);
   const setLanguage = useAppStore((s) => s.setLanguage);
+  const openPro = useAppStore((s) => s.openPro);
+  const startTrial = useAppStore((s) => s.startTrial);
+  const applyEntitlement = useAppStore((s) => s.applyEntitlement);
+  const pro = useIsPro();
   const [showClinical, setShowClinical] = useState(false);
   const lang = profile?.language ?? 'en';
   const hi = lang === 'hi';
@@ -139,19 +145,32 @@ export default function Profile() {
         </View>
       </Card>
 
-      <View style={styles.subLine}>
-        <Text style={styles.subValue}>
-          {subscription.status === 'trial'
-            ? hi
-              ? '7-दिन ट्रायल'
-              : '7-day trial'
-            : subscription.status ?? '—'}
-        </Text>
-        <Muted>
-          {streakDays} {hi ? 'दिन स्ट्रीक' : 'd streak'} · {exerciseLogs.length}{' '}
-          {hi ? 'वर्कआउट' : 'workouts'}
-        </Muted>
-      </View>
+      <Pressable onPress={() => (pro ? undefined : openPro('generic'))} style={[styles.proCard, pro && styles.proCardOn]}>
+        <View style={styles.proBadge}>
+          <Ionicons name="ribbon" size={20} color="#7A4A00" />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.proTitle}>
+            {pro ? (subscription.status === 'trial' ? (hi ? 'Pro · फ्री ट्रायल' : 'Pro · free trial') : 'NariCare Pro') : hi ? 'Pro लें' : 'Go Pro'}
+          </Text>
+          <Muted>
+            {pro
+              ? `${streakDays} ${hi ? 'दिन स्ट्रीक' : 'day streak'} · ${exerciseLogs.length} ${hi ? 'वर्कआउट' : 'workouts'}`
+              : hi
+                ? 'पूरे वर्कआउट, AI कोच, 7-दिन खाना प्लान'
+                : 'Full workouts, AI coach, 7-day meal plan'}
+          </Muted>
+        </View>
+        {!pro ? <Ionicons name="chevron-forward" size={18} color={colors.muted} /> : null}
+      </Pressable>
+      {__DEV__ ? (
+        <Pressable
+          onPress={() => (pro ? applyEntitlement({ active: false, plan: null, isTrial: false, expiresAt: null }) : startTrial('annual'))}
+          style={{ alignSelf: 'center', marginTop: 8 }}
+        >
+          <Text style={styles.moreText}>{pro ? 'Dev: switch to free' : 'Dev: switch to Pro trial'}</Text>
+        </Pressable>
+      ) : null}
 
       <Label style={{ marginTop: spacing.xl }}>{hi ? 'देखभाल' : 'Care'}</Label>
       <LinkList links={CARE_CORE} hi={hi} onOpen={open} />
@@ -191,6 +210,10 @@ export default function Profile() {
 }
 
 const styles = StyleSheet.create({
+  proCard: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: spacing.md, padding: 14, borderRadius: 20, backgroundColor: '#FFF4D6', borderWidth: 1, borderColor: '#F5D88A' },
+  proCardOn: { backgroundColor: '#fff', borderColor: colors.line },
+  proBadge: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFC857', alignItems: 'center', justifyContent: 'center' },
+  proTitle: { fontFamily: fonts.bodyBold, fontSize: 16, color: colors.ink },
   linkBlock: {
     marginTop: spacing.sm,
     backgroundColor: colors.white,
@@ -198,16 +221,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.line,
-  },
-  subLine: {
-    marginTop: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  subValue: {
-    fontFamily: fonts.bodyBold,
-    fontSize: 15,
-    color: colors.ink,
-    marginBottom: 4,
   },
   moreToggle: { marginTop: spacing.md, marginBottom: spacing.xs },
   moreText: { fontFamily: fonts.bodyMedium, fontSize: 13, color: colors.muted },
