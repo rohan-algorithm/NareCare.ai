@@ -69,7 +69,7 @@ export function TrialWins() {
 }
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: '#fff', borderRadius: 22, padding: spacing.md, marginTop: spacing.md, ...shadowCard, shadowOpacity: 0.07, elevation: 3 },
+  card: { backgroundColor: '#fff', borderRadius: 22, padding: spacing.md, marginTop: 12, ...shadowCard, shadowOpacity: 0.07, elevation: 3 },
   head: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   kicker: { fontFamily: fonts.bodyBold, fontSize: 11.5, letterSpacing: 0.5, textTransform: 'uppercase', color: colors.blushDeep },
   count: { fontFamily: fonts.displayBold, fontSize: 15, color: colors.ink },

@@ -150,7 +150,7 @@ export default function Coach() {
                   ? 'भोजन, साइकल, क्रेविंग, लैब — सादे शब्दों में। दवा की खुराक कभी नहीं।'
                   : 'Food, cycle, cravings, labs — plain language. Never dosing advice.'}
               </Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: spacing.md }}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: spacing.md, marginHorizontal: -spacing.md }} contentContainerStyle={{ paddingHorizontal: spacing.md }}>
                 {chips.map((c) => (
                   <Pressable key={c.label} onPress={() => send(c.prompt)} style={styles.chip}>
                     <Ionicons name={c.icon} size={15} color={colors.blushDeep} />

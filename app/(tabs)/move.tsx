@@ -271,7 +271,7 @@ export default function Move() {
       )}
 
       <Text style={styles.section}>{hi ? 'झटपट वर्कआउट' : 'Quick workouts'}</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10 }}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.bleed} contentContainerStyle={styles.bleedContent}>
         {QUICK.map((q) => (
           <Pressable
             key={q.en}
@@ -359,7 +359,9 @@ const styles = StyleSheet.create({
   kicker: { fontFamily: fonts.bodyBold, fontSize: 12, letterSpacing: 0.6, textTransform: 'uppercase', color: colors.muted },
   title: { fontFamily: fonts.displayBold, fontSize: 28, color: colors.ink, letterSpacing: -0.6 },
   iconBtn: { ...CARD, width: 44, height: 44, borderRadius: 22, padding: 0, alignItems: 'center', justifyContent: 'center' },
-  card: { ...CARD, marginTop: spacing.sm },
+  card: { ...CARD, marginTop: 12 },
+  bleed: { marginHorizontal: -spacing.lg },
+  bleedContent: { gap: 10, paddingHorizontal: spacing.lg, paddingVertical: 4 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   prefTitle: { fontFamily: fonts.bodyBold, fontSize: 13, color: colors.muted, marginTop: 10, marginBottom: 8 },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },

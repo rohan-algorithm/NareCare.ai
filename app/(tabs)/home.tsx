@@ -274,7 +274,7 @@ export default function Home() {
 
       <SafetyBanner cycle={cycle} logs={logs} hi={hi} />
 
-      <View style={{ marginTop: spacing.md, gap: 10 }}>
+      <View style={{ marginTop: 12, gap: 12 }}>
         {tasks.map((t, i) => (
           <Animated.View key={t.key} entering={FadeInDown.delay(120 + i * 50).duration(380)}>
             <Pressable onPress={() => router.push(t.href as any)} style={[styles.task, t.done && { opacity: 0.6 }]}>
@@ -449,7 +449,7 @@ const styles = StyleSheet.create({
   stat: { flex: 1, borderRadius: 22, padding: 14, gap: 2 },
   statValue: { fontFamily: fonts.displayBold, fontSize: 22, color: colors.ink, marginTop: 6, letterSpacing: -0.4 },
   statLabel: { fontFamily: fonts.bodyMedium, fontSize: 11, color: colors.muted },
-  aiCard: { marginTop: spacing.md, borderRadius: 26, padding: spacing.lg, gap: 12 },
+  aiCard: { marginTop: 12, borderRadius: 26, padding: spacing.lg, gap: 12 },
   aiHead: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   aiBadge: { width: 30, height: 30, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   aiKicker: { fontFamily: fonts.bodyBold, fontSize: 12, letterSpacing: 0.6, color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase' },
@@ -461,7 +461,7 @@ const styles = StyleSheet.create({
   nextTitle: { fontFamily: fonts.bodyBold, fontSize: 15, color: colors.ink, marginTop: 2 },
   nextCta: { fontFamily: fonts.bodyBold, fontSize: 14, color: colors.blushDeep },
   alarmBanner: {
-    marginTop: spacing.md,
+    marginTop: 12,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
@@ -483,7 +483,7 @@ const styles = StyleSheet.create({
   task: { ...CARD, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 },
   taskTitle: { fontFamily: fonts.bodyBold, fontSize: 15, color: colors.ink },
   taskSub: { fontFamily: fonts.body, fontSize: 12.5, color: colors.muted, marginTop: 2 },
-  lessonCard: { ...CARD, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, marginTop: spacing.md, borderWidth: 1, borderColor: '#CDEBDD' },
+  lessonCard: { ...CARD, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, marginTop: 12, borderWidth: 1, borderColor: '#CDEBDD' },
   lessonKicker: { fontFamily: fonts.bodyBold, fontSize: 11, letterSpacing: 0.4, textTransform: 'uppercase', color: '#2A8F6A' },
   lessonTitle: { fontFamily: fonts.bodyBold, fontSize: 15, color: colors.ink, marginTop: 2 },
   moreRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: spacing.md, paddingVertical: 10 },

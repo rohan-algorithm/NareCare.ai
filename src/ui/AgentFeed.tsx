@@ -97,7 +97,7 @@ export function AgentFeed() {
 }
 
 const styles = StyleSheet.create({
-  wrap: { marginTop: 10 },
+  wrap: { marginTop: 12 },
   card: { borderRadius: 22, padding: 16, gap: 8 },
   head: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   kicker: { flex: 1, fontFamily: fonts.bodyBold, fontSize: 12, letterSpacing: 0.6, textTransform: 'uppercase', color: 'rgba(255,255,255,0.75)' },

@@ -71,7 +71,7 @@ export function WaterCard() {
 }
 
 const styles = StyleSheet.create({
-  card: { marginTop: 10, backgroundColor: '#fff', borderRadius: 22, padding: 14, ...shadowCard, shadowOpacity: 0.07, shadowRadius: 14, elevation: 3 },
+  card: { marginTop: 12, backgroundColor: '#fff', borderRadius: 22, padding: 14, ...shadowCard, shadowOpacity: 0.07, shadowRadius: 14, elevation: 3 },
   head: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   icon: { width: 42, height: 42, borderRadius: 14, backgroundColor: '#E6F0FD', alignItems: 'center', justifyContent: 'center' },
   title: { fontFamily: fonts.bodyBold, fontSize: 15, color: colors.ink },

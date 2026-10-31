@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet, Text, type ViewStyle } from 'react-native';
 
 import { colors, fonts, radii, spacing } from '@/src/theme/tokens';
 
@@ -7,9 +7,10 @@ type Props = {
   selected?: boolean;
   onPress?: () => void;
   tone?: 'default' | 'gold' | 'rose';
+  style?: ViewStyle;
 };
 
-export function Chip({ label, selected, onPress, tone = 'default' }: Props) {
+export function Chip({ label, selected, onPress, tone = 'default', style }: Props) {
   const selectedBg =
     tone === 'gold' ? colors.amberSoft : tone === 'rose' ? colors.blushSoft : colors.mist;
   const selectedColor =
@@ -18,7 +19,7 @@ export function Chip({ label, selected, onPress, tone = 'default' }: Props) {
   return (
     <Pressable
       onPress={onPress}
-      style={[styles.chip, selected && { backgroundColor: selectedBg, borderColor: selectedColor }]}
+      style={[styles.chip, style, selected && { backgroundColor: selectedBg, borderColor: selectedColor }]}
       accessibilityRole="button"
       accessibilityState={{ selected }}
     >

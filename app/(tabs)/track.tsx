@@ -115,7 +115,7 @@ export default function Track() {
       <Label style={{ marginTop: spacing.xl, marginBottom: spacing.sm }}>
         {lang === 'hi' ? 'पीरियड' : 'Period'}
       </Label>
-      <View style={styles.wrap}>
+      <View style={styles.evenRow}>
         {(
           [
             ['started', 'Started', 'शुरू'],
@@ -129,6 +129,7 @@ export default function Track() {
             label={lang === 'hi' ? hi : en}
             selected={periodStatus === id}
             tone="rose"
+            style={styles.evenChip}
             onPress={() => setPeriodStatus(id)}
           />
         ))}
@@ -170,9 +171,9 @@ export default function Track() {
       <Label style={{ marginTop: spacing.md }}>
         {lang === 'hi' ? `मूड · ${mood}/5` : `Mood · ${mood}/5`}
       </Label>
-      <View style={[styles.wrap, { marginTop: spacing.sm }]}>
+      <View style={[styles.evenRow, { marginTop: spacing.sm }]}>
         {[1, 2, 3, 4, 5].map((n) => (
-          <Chip key={n} label={['😣', '🙁', '😐', '🙂', '😄'][n - 1]} selected={mood === n} tone="gold" onPress={() => setMood(n)} />
+          <Chip key={n} label={['😣', '🙁', '😐', '🙂', '😄'][n - 1]} selected={mood === n} tone="gold" style={styles.evenChip} onPress={() => setMood(n)} />
         ))}
       </View>
 
@@ -278,6 +279,8 @@ export default function Track() {
 }
 
 const styles = StyleSheet.create({
+  evenRow: { flexDirection: 'row', gap: 8, marginBottom: spacing.sm },
+  evenChip: { flex: 1, marginRight: 0, marginBottom: 0, paddingHorizontal: 4, alignItems: 'center' },
   wrap: { flexDirection: 'row', flexWrap: 'wrap' },
   notes: {
     minHeight: 88,

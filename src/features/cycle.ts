@@ -105,7 +105,7 @@ export function phaseCopy(
 export function cycleLabel(logs: SymptomLog[], lang: 'en' | 'hi' = 'en'): string {
   const hi = lang === 'hi';
   const st = cycleStatus(logs);
-  if (st.day == null) return hi ? 'पीरियड लॉग करें, साइकल ट्रैक होगा' : 'Log your period to track your cycle';
+  if (st.day == null) return hi ? 'पीरियड लॉग करें' : 'Log your period';
   if (st.overdue) return hi ? `दिन ${st.day} · डॉक्टर से मिलें` : `Day ${st.day} · time to see a doctor`;
   if (st.late) return hi ? `दिन ${st.day} · सामान्य से लंबा` : `Day ${st.day} · longer than usual`;
   const phase = getCyclePhase(st.day, logs);

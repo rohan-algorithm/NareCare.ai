@@ -160,7 +160,7 @@ export default function Diet() {
         </Animated.View>
       )}
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: spacing.md }} contentContainerStyle={{ gap: 8 }}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: spacing.md, marginHorizontal: -spacing.lg }} contentContainerStyle={{ gap: 8, paddingHorizontal: spacing.lg }}>
         {dates.map((d) => {
           const on = d === date;
           return (
