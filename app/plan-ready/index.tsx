@@ -61,9 +61,12 @@ export default function PlanReady() {
     return () => clearTimeout(t);
   }, [done, steps.length]);
 
+  const completeGuide = useAppStore((s) => s.completeGuide);
+  // This screen replaces the starter tour for new users.
   useEffect(() => {
     startProgram(program.id);
-  }, [program.id, startProgram]);
+    completeGuide();
+  }, [program.id, startProgram, completeGuide]);
 
   const ready = done >= steps.length;
   const timeline = [
