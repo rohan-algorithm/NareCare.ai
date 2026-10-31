@@ -127,7 +127,7 @@ export default function Profile() {
       <ScreenHeader
         door={hi ? 'आप' : 'You'}
         title={profile?.name ?? (hi ? 'आपकी जगह' : 'Your space')}
-        subtitle={`${phenotypeLabel(profile?.phenotype ?? 'mixed')} · ${profile?.city ?? 'India'}`}
+        subtitle={`${phenotypeLabel(profile?.phenotype ?? 'mixed', hi ? 'hi' : 'en')} · ${profile?.city ?? (hi ? 'भारत' : 'India')}`}
       />
 
       <Card tone="solid" style={{ marginTop: spacing.lg }}>

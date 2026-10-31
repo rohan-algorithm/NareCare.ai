@@ -180,7 +180,11 @@ export default function Coach() {
               </LinearGradient>
             ) : (
               <View style={[styles.bubble, styles.aiBubble]}>
-                <Text style={styles.bubbleText}>{item.text}</Text>
+                <Text style={styles.bubbleText}>
+                  {item.id === 'welcome' && hi
+                    ? 'नमस्ते! मैं आपकी NariCare AI कोच हूँ: खाना, क्रेविंग, साइकल, लैब, एक्सरसाइज़, मूड। कुछ भी पूछें, या कहें “2 गिलास पानी जोड़ो”।'
+                    : item.text}
+                </Text>
                 {item.actions?.map((a: NonNullable<ChatMessage['actions']>[number], i: number) => (
                   <Pressable
                     key={i}

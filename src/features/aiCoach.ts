@@ -12,33 +12,60 @@ export type ChatMessage = {
 const DISCLAIMER =
   '\n\n— Educational only. Discuss medical decisions with your doctor.';
 
-function phenotypeTips(p: Phenotype): string[] {
-  switch (p) {
-    case 'metabolic':
-      return [
-        'Prioritize protein at breakfast (eggs, paneer, moong cheela, sprouts).',
-        'Walk 10–15 min after lunch to blunt the post-meal glucose spike.',
-        'Swap white rice for millet/brown rice half-plates when possible.',
-      ];
-    case 'androgenic':
-      return [
-        'Spearmint tea 1–2 cups/day is commonly used for androgen support (ask your doctor).',
-        'Keep dairy lighter if acne flares; watch skin for 2–3 weeks.',
-        'Strength + steady protein helps SHBG and skin over months, not days.',
-      ];
-    case 'inflammatory':
-      return [
-        'Turmeric-ginger warm drink + leafy greens help the inflammatory load.',
-        'Sleep and stress matter as much as food — luteal yoga is your friend.',
-        'Cut refined sugar/maida first; that alone often calms bloating.',
-      ];
-    default:
-      return [
-        'Track 7 days of symptoms so Progress Pulse can show what’s working.',
-        'Keep only 2 micro-habits/day — consistency beats intensity.',
-        'Log meals as ate/swapped/skipped so we can personalize next week.',
-      ];
-  }
+const TIPS: Partial<Record<Phenotype, { en: string[]; hi: string[] }>> & Record<'default', { en: string[]; hi: string[] }> = {
+  metabolic: {
+    en: [
+      'Prioritize protein at breakfast (eggs, paneer, moong cheela, sprouts).',
+      'Walk 10–15 min after lunch to blunt the post-meal glucose spike.',
+      'Swap white rice for millet/brown rice half-plates when possible.',
+    ],
+    hi: [
+      'नाश्ते में पहले प्रोटीन (अंडे, पनीर, मूंग चीला, स्प्राउट्स)।',
+      'लंच के बाद 10–15 मिनट टहलें, शुगर का उछाल कम होगा।',
+      'जब हो सके, सफ़ेद चावल की जगह आधी प्लेट मिलेट/ब्राउन राइस।',
+    ],
+  },
+  androgenic: {
+    en: [
+      'Spearmint tea 1–2 cups/day is commonly used for androgen support (ask your doctor).',
+      'Keep dairy lighter if acne flares; watch skin for 2–3 weeks.',
+      'Strength + steady protein helps SHBG and skin over months, not days.',
+    ],
+    hi: [
+      'दिन में 1–2 कप पुदीना चाय आम तौर पर ली जाती है (डॉक्टर से पूछें)।',
+      'मुंहासे बढ़ें तो डेयरी कम करें; 2–3 हफ्ते त्वचा पर नज़र रखें।',
+      'स्ट्रेंथ और नियमित प्रोटीन महीनों में त्वचा सुधारते हैं, दिनों में नहीं।',
+    ],
+  },
+  inflammatory: {
+    en: [
+      'Turmeric-ginger warm drink + leafy greens help the inflammatory load.',
+      'Sleep and stress matter as much as food — luteal yoga is your friend.',
+      'Cut refined sugar/maida first; that alone often calms bloating.',
+    ],
+    hi: [
+      'हल्दी-अदरक का गर्म पेय और हरी सब्ज़ियाँ सूजन कम करने में मदद करती हैं।',
+      'नींद और तनाव उतने ही ज़रूरी हैं जितना खाना; योग आपका साथी है।',
+      'पहले चीनी और मैदा कम करें; अक्सर इसी से पेट फूलना कम होता है।',
+    ],
+  },
+  default: {
+    en: [
+      'Track 7 days of symptoms so Progress Pulse can show what’s working.',
+      'Keep only 2 micro-habits/day — consistency beats intensity.',
+      'Log meals as ate/swapped/skipped so we can personalize next week.',
+    ],
+    hi: [
+      '7 दिन लक्षण लॉग करें ताकि पता चले क्या काम कर रहा है।',
+      'दिन में सिर्फ़ 2 छोटी आदतें; नियमितता तीव्रता से बेहतर।',
+      'खाना खाया/बदला/छोड़ा लॉग करें ताकि अगला हफ्ता आपके हिसाब से बने।',
+    ],
+  },
+};
+
+function phenotypeTips(p: Phenotype, hi = false): string[] {
+  const set = TIPS[p] ?? TIPS.default;
+  return hi ? set.hi : set.en;
 }
 
 /** On-device coach — swaps to OpenAI Edge Function when keys are connected. */
@@ -95,8 +122,8 @@ export function dailyAiTip(
   lang: 'en' | 'hi' = 'en',
 ): string {
   const ph = profile?.phenotype ?? 'mixed';
-  const tips = phenotypeTips(ph);
   const hi = lang === 'hi';
+  const tips = phenotypeTips(ph, hi);
   if (cyclePhase === 'luteal') {
     return hi
       ? `ल्यूटियल दिन — ${tips[1]} आज नरम योग > HIIT।`

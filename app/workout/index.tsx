@@ -12,6 +12,7 @@ import { colors, fonts, spacing } from '@/src/theme/tokens';
 import { useAppStore } from '@/src/store/useAppStore';
 import { MOVE_BY_ID, type TrainerMove } from '@/src/content/trainerMoves';
 import { FREE, useIsPro } from '@/src/features/pro';
+import { maybeAskForReview } from '@/src/features/review';
 import { boostFor } from '@/src/content/programs';
 import { buildWorkout, easierAlternative, kcalFor, type Focus, type Step } from '@/src/features/workoutEngine';
 import { speakSimple, stopCoachVoice } from '@/src/features/moveCoach';
@@ -348,6 +349,7 @@ export default function WorkoutPlayer() {
                 onPress={() => {
                   rateWorkout(r);
                   setRated(true);
+                  if (r !== 'hard') setTimeout(() => void maybeAskForReview(), 900);
                 }}
                 style={styles.rateBtn}
               >

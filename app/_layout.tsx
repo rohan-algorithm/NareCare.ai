@@ -17,6 +17,7 @@ import 'react-native-reanimated';
 import { colors } from '@/src/theme/tokens';
 import { useNudgeEngine } from '@/src/features/useNudgeEngine';
 import { ProSheetHost } from '@/src/ui/ProSheet';
+import { CelebrationHost } from '@/src/ui/Celebration';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -87,6 +88,7 @@ export default function RootLayout() {
         <Stack.Screen name="guide/index" options={{ headerShown: true, title: 'Starter guide', animation: 'slide_from_right' }} />
       </Stack>
       <ProSheetHost />
+      <CelebrationHost />
     </>
   );
 }

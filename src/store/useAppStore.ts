@@ -223,6 +223,13 @@ type AppState = {
   /** Notifications show no health details on the lock screen. */
   discreet: boolean;
   setDiscreet: (on: boolean) => void;
+  /** streak badges already celebrated, and the badge being shown now */
+  celebrated: number[];
+  celebrating: number | null;
+  celebrate: (m: number | null) => void;
+  firstOpenAt: string | null;
+  reviewAskedAt: string | null;
+  markReviewAsked: () => void;
 };
 
 const emptyDraft: SetupDraft = { step: 0, symptoms: [], allergies: [], goals: [] };
@@ -679,6 +686,12 @@ export const useAppStore = create<AppState>()(
       setPcosCheck: (r) => set({ pcosCheck: r }),
       discreet: false,
       setDiscreet: (on) => set({ discreet: on }),
+      celebrated: [],
+      celebrating: null,
+      celebrate: (m) => set(m == null ? { celebrating: null } : { celebrating: m, celebrated: [...new Set([...get().celebrated, m])] }),
+      firstOpenAt: new Date().toISOString(),
+      reviewAskedAt: null,
+      markReviewAsked: () => set({ reviewAskedAt: new Date().toISOString() }),
     }),
     {
       name: 'naricare-store-v3',
@@ -755,6 +768,9 @@ export const useAppStore = create<AppState>()(
         autopilotDate: s.autopilotDate,
         pcosCheck: s.pcosCheck,
         discreet: s.discreet,
+        celebrated: s.celebrated,
+        firstOpenAt: s.firstOpenAt,
+        reviewAskedAt: s.reviewAskedAt,
       }),
     }
   )

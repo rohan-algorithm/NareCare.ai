@@ -377,6 +377,10 @@ function DayLog({ date, dayLabel, existing, hi, isToday }: { date: string; dayLa
       notes,
     });
     setSaved(true);
+    // Earned a streak badge with this log? Celebrate it once.
+    const st = useAppStore.getState();
+    const cur = logStreak(st.symptomLogs).current;
+    if (MILESTONES.includes(cur) && !st.celebrated.includes(cur)) st.celebrate(cur);
   };
 
   return (
