@@ -20,7 +20,7 @@ function isExpoGo() {
 }
 
 export async function getNotifications() {
-  if (isExpoGo()) return null;
+  if (isExpoGo() || Platform.OS === 'web') return null;
   try {
     return await import('expo-notifications');
   } catch {

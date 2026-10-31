@@ -7,8 +7,9 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Screen } from '@/src/ui/Screen';
 import { Button } from '@/src/ui/Button';
 import { BrandMark } from '@/src/ui/BrandMark';
-import { Ionicons, IconBubble, type IconName } from '@/src/ui/Icon';
+import { Ionicons } from '@/src/ui/Icon';
 import { colors, fonts, gradients, shadowCard, spacing } from '@/src/theme/tokens';
+import { useLang } from '@/src/i18n/useLang';
 import { useAppStore } from '@/src/store/useAppStore';
 import { phenotypeLabel } from '@/src/features/phenotype';
 import {
@@ -34,7 +35,7 @@ export default function Paywall() {
   const [loading, setLoading] = useState(billingConfigured);
   const [busy, setBusy] = useState(false);
   const [selected, setSelected] = useState<PlanType>('annual');
-  const hi = profile?.language === 'hi';
+  const hi = useLang() === 'hi';
   const focus = phenotypeLabel(profile?.phenotype ?? 'mixed', hi ? 'hi' : 'en');
 
   useEffect(() => {
@@ -53,14 +54,20 @@ export default function Paywall() {
   const price = (id: PlanType) => byId[id]?.price ?? FALLBACK[id];
   const hasTrial = billingConfigured ? Boolean(byId[selected]?.hasFreeTrial) : true;
 
-  const outcomes: { icon: IconName; text: string }[] = [
-    { icon: 'restaurant', text: hi ? 'आपकी पसंद, डाइट और रसोई के हिसाब से 7-दिन का खाना प्लान' : 'A 7-day meal plan for your taste, diet and kitchen' },
-    { icon: 'camera', text: hi ? 'थाली स्कैनर: किसी भी खाने का PCOS स्कोर' : 'Plate scanner: a PCOS score for any meal' },
-    { icon: 'trending-up', text: hi ? 'प्रोग्रेस प्रूफ़: वज़न, कमर, त्वचा, बाल, मूड, पीरियड' : 'Progress proof: weight, waist, skin, hair, mood, cycles' },
-    { icon: 'school', text: hi ? '8-हफ्ते की PCOS अकादमी, हिंदी और अंग्रेज़ी में' : '8-week PCOS Academy in Hindi & English' },
-    { icon: 'fitness', text: hi ? '15-मिनट घरेलू वर्कआउट, डेमो के साथ' : '15-minute home workouts with demos' },
-    { icon: 'flask', text: hi ? 'लैब रिपोर्ट सरल हिंदी में + डॉक्टर PDF' : 'Lab reports in plain Hindi + doctor PDF' },
-    { icon: 'sparkles', text: hi ? 'AI कोच जो आपका डेटा जानता है, 24x7' : 'AI coach that knows your data, 24x7' },
+  const compare: [string, string, string][] = [
+    [hi ? 'रोज़ का प्लान, पानी, ट्रैकिंग' : 'Daily plan, water & tracking', '✓', '✓'],
+    [hi ? 'PCOS जाँच और साइकल अलर्ट' : 'PCOS check & cycle alerts', '✓', '✓'],
+    [hi ? 'ट्रेनर वर्कआउट और योग' : 'Trainer workouts & yoga', hi ? '3 मूव' : '3 moves', hi ? 'पूरे + 4 प्रोग्राम' : 'Full + 4 programs'],
+    [hi ? 'AI कोच' : 'AI coach', hi ? '3/दिन' : '3 a day', hi ? 'अनलिमिटेड' : 'Unlimited'],
+    [hi ? 'खाना प्लान' : 'Meal plan', hi ? 'आज' : 'Today', hi ? '7 दिन + बदलाव' : '7 days + swaps'],
+    [hi ? 'नारी ऑटोपायलट' : 'Nari autopilot', '✗', '✓'],
+    [hi ? 'थाली और लैब स्कैन' : 'Plate & lab scans', '1', hi ? 'अनलिमिटेड' : 'Unlimited'],
+    [hi ? 'डॉक्टर PDF' : 'Doctor PDF', '✗', '✓'],
+  ];
+  const trialSteps: [string, string, string][] = [
+    ['lock-open', hi ? 'आज' : 'Today', hi ? 'सब कुछ अनलॉक। ₹0 चार्ज।' : 'Everything unlocked. You pay ₹0.'],
+    ['notifications', hi ? 'दिन 5' : 'Day 5', hi ? 'हम याद दिलाएँगे कि ट्रायल खत्म होने वाला है।' : 'We remind you the trial is ending.'],
+    ['card', hi ? 'दिन 7' : 'Day 7', hi ? 'प्लान शुरू। उससे पहले Play Store में कभी भी रद्द करें।' : 'Plan starts. Cancel anytime before in Play Store.'],
   ];
 
 
@@ -139,8 +146,11 @@ export default function Paywall() {
         <LinearGradient colors={[...gradients.hero]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
           <Text style={styles.kicker}>{hi ? 'आपका 8-हफ्ते का प्लान तैयार' : 'Your 8-week plan is ready'}</Text>
           <Text style={styles.heroTitle}>
-            {profile?.name ? `${profile.name}, ` : ''}
-            {hi ? 'PCOS को अपने हाथ में लें' : 'take charge of your PCOS'}
+            {profile?.name
+              ? `${profile.name}, ${hi ? 'PCOS को अपने हाथ में लें' : 'take charge of your PCOS'}`
+              : hi
+                ? 'PCOS को अपने हाथ में लें'
+                : 'Take charge of your PCOS'}
           </Text>
           <View style={styles.focusPill}>
             <Ionicons name="pulse" size={13} color="#fff" />
@@ -149,14 +159,48 @@ export default function Paywall() {
         </LinearGradient>
       </Animated.View>
 
-      <View style={styles.outcomes}>
-        {outcomes.map((o) => (
-          <View key={o.text} style={styles.outcome}>
-            <IconBubble name={o.icon} color={colors.blushDeep} bg={colors.blushSoft} box={34} size={17} />
-            <Text style={styles.outcomeText}>{o.text}</Text>
+      <View style={styles.table}>
+        <View style={[styles.tRow, styles.tHead]}>
+          <Text style={[styles.tCell, styles.tFeat]} />
+          <Text style={[styles.tCell, styles.tHeadText]}>{hi ? 'फ्री' : 'Free'}</Text>
+          <Text style={[styles.tCell, styles.tHeadText, { color: colors.blushDeep }]}>Pro</Text>
+        </View>
+        {compare.map(([feat, free, pro], i) => (
+          <View key={feat} style={[styles.tRow, i % 2 === 1 && { backgroundColor: '#FFF7F5' }]}>
+            <Text style={[styles.tCell, styles.tFeat]}>{feat}</Text>
+            <Text style={[styles.tCell, styles.tVal]}>{free === '✗' ? '—' : free}</Text>
+            <Text style={[styles.tCell, styles.tVal, styles.tPro]}>{pro}</Text>
           </View>
         ))}
       </View>
+
+      <View style={styles.anchor}>
+        <Ionicons name="pricetag" size={16} color={colors.teal} />
+        <Text style={styles.anchorText}>
+          {hi
+            ? 'डाइटिशियन PCOS प्रोग्राम: ₹2,000+/महीना। NariCare Pro सालाना: ₹83/महीना।'
+            : 'Dietitian PCOS programs: ₹2,000+ a month. NariCare Pro yearly: ₹83 a month.'}
+        </Text>
+      </View>
+
+      {hasTrial ? (
+        <View style={styles.timeline}>
+          {trialSteps.map(([icon, when, what], i) => (
+            <View key={when} style={styles.tlRow}>
+              <View style={styles.tlIconCol}>
+                <View style={[styles.tlIcon, i === 0 && { backgroundColor: colors.blushDeep }]}>
+                  <Ionicons name={icon as any} size={15} color={i === 0 ? '#fff' : colors.blushDeep} />
+                </View>
+                {i < trialSteps.length - 1 ? <View style={styles.tlLine} /> : null}
+              </View>
+              <View style={{ flex: 1, paddingBottom: 12 }}>
+                <Text style={styles.tlWhen}>{when}</Text>
+                <Text style={styles.tlWhat}>{what}</Text>
+              </View>
+            </View>
+          ))}
+        </View>
+      ) : null}
 
       {loading ? (
         <ActivityIndicator color={colors.blushDeep} style={{ marginTop: spacing.lg }} />
@@ -235,6 +279,23 @@ const styles = StyleSheet.create({
   focusPill: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', backgroundColor: 'rgba(255,255,255,0.22)', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999, marginTop: 4 },
   focusText: { fontFamily: fonts.bodyBold, fontSize: 12, color: '#fff' },
   outcomes: { marginTop: spacing.lg, gap: 10 },
+  table: { marginTop: spacing.lg, backgroundColor: '#fff', borderRadius: 20, overflow: 'hidden', ...shadowCard, shadowOpacity: 0.06, elevation: 2 },
+  tRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, paddingHorizontal: 12 },
+  tHead: { backgroundColor: colors.blushSoft },
+  tCell: { width: 86, textAlign: 'center' },
+  tFeat: { flex: 1, width: undefined, textAlign: 'left', fontFamily: fonts.bodyMedium, fontSize: 13.5, color: colors.ink },
+  tHeadText: { fontFamily: fonts.bodyBold, fontSize: 13, color: colors.muted },
+  tVal: { fontFamily: fonts.bodyMedium, fontSize: 12.5, color: colors.muted },
+  tPro: { fontFamily: fonts.bodyBold, color: colors.good },
+  anchor: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#E6F2ED', borderRadius: 14, padding: 12, marginTop: spacing.md },
+  anchorText: { flex: 1, fontFamily: fonts.bodyBold, fontSize: 13, lineHeight: 18, color: colors.teal },
+  timeline: { marginTop: spacing.lg },
+  tlRow: { flexDirection: 'row', gap: 12 },
+  tlIconCol: { alignItems: 'center', width: 30 },
+  tlIcon: { width: 30, height: 30, borderRadius: 15, backgroundColor: colors.blushSoft, alignItems: 'center', justifyContent: 'center' },
+  tlLine: { flex: 1, width: 2, backgroundColor: colors.blushSoft, marginVertical: 2 },
+  tlWhen: { fontFamily: fonts.bodyBold, fontSize: 14, color: colors.ink },
+  tlWhat: { fontFamily: fonts.body, fontSize: 13, lineHeight: 18, color: colors.muted, marginTop: 1 },
   outcome: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   outcomeText: { flex: 1, fontFamily: fonts.bodyMedium, fontSize: 14.5, color: colors.ink },
   plan: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#fff', borderRadius: 20, padding: 16, borderWidth: 2, borderColor: 'transparent', ...shadowCard, shadowOpacity: 0.06, elevation: 2 },

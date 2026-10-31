@@ -67,7 +67,7 @@ export default function Setup() {
       return;
     }
     finishSetup();
-    router.replace('/paywall');
+    router.replace('/plan-ready' as any);
   };
 
   const back = () => {

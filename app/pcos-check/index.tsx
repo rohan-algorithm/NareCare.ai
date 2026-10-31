@@ -8,13 +8,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@/src/ui/Icon';
 import { ProgressRing } from '@/src/ui/ProgressRing';
 import { colors, fonts, shadowCard, spacing } from '@/src/theme/tokens';
+import { useLang } from '@/src/i18n/useLang';
 import { useAppStore } from '@/src/store/useAppStore';
 import { BAND_COPY, QUESTIONS, TESTS, scoreCheck, type CheckAnswers, type CheckResult } from '@/src/content/pcosCheck';
 
 export default function PcosCheck() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const hi = useAppStore((s) => s.profile?.language) === 'hi';
+  const hi = useLang() === 'hi';
   const saved = useAppStore((s) => s.pcosCheck);
   const setPcosCheck = useAppStore((s) => s.setPcosCheck);
   const hasProfile = useAppStore((s) => !!s.profile);
