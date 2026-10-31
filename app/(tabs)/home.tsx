@@ -13,6 +13,7 @@ import { Ionicons, IconBubble, type IconName } from '@/src/ui/Icon';
 import { ProgressRing } from '@/src/ui/ProgressRing';
 import { TrialWins } from '@/src/ui/TrialWins';
 import { WaterCard } from '@/src/ui/WaterCard';
+import { logStreak } from '@/src/features/streak';
 import { AgentFeed } from '@/src/ui/AgentFeed';
 import { useIsPro } from '@/src/features/pro';
 import { nextLesson, programWeek } from '@/src/content/academy';
@@ -34,7 +35,7 @@ export default function Home() {
   const resetCouncilIfNeeded = useAppStore((s) => s.resetCouncilIfNeeded);
   const badDayMode = useAppStore((s) => s.badDayMode);
   const setBadDayMode = useAppStore((s) => s.setBadDayMode);
-  const streakDays = useAppStore((s) => s.streakDays);
+  const streakDays = useMemo(() => logStreak(logs).current, [logs]);
   const reminders = useAppStore((s) => s.reminders);
   const scheduleDone = useAppStore((s) => s.scheduleDone);
   const resetScheduleIfNeeded = useAppStore((s) => s.resetScheduleIfNeeded);
@@ -164,7 +165,7 @@ export default function Home() {
     {
       key: 'move',
       icon: 'fitness',
-      title: hi ? `मूव: ${todayMove.minutes} मिनट` : `Move: ${todayMove.minutes} minutes`,
+      title: hi ? `एक्सरसाइज़: ${todayMove.minutes} मिनट` : `Exercise: ${todayMove.minutes} minutes`,
       sub: hi ? `${todayMove.title.hi} · ~${todayMove.kcal} kcal` : `${todayMove.title.en} · ~${todayMove.kcal} kcal`,
       href: '/move?start=1',
       done: exerciseLogs.some((l) => l.completed && isToday(l.date)),

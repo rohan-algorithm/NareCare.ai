@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ComponentRef, ReactNode, RefObject } from 'react';
 import { ScrollView, StyleSheet, View, ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -11,6 +11,7 @@ type Props = {
   style?: ViewStyle;
   edges?: ('top' | 'bottom' | 'left' | 'right')[];
   variant?: 'default' | 'immersive' | 'dark';
+  scrollRef?: RefObject<ComponentRef<typeof ScrollView> | null>;
 };
 
 export function Screen({
@@ -19,6 +20,7 @@ export function Screen({
   style,
   edges = ['top', 'left', 'right'],
   variant = 'default',
+  scrollRef,
 }: Props) {
   const gradient =
     variant === 'dark'
@@ -29,6 +31,7 @@ export function Screen({
 
   const body = scroll ? (
     <ScrollView
+      ref={scrollRef}
       contentContainerStyle={[styles.content, style]}
       showsVerticalScrollIndicator={false}
       bounces

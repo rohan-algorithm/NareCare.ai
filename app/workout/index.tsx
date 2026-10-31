@@ -224,7 +224,7 @@ export default function WorkoutPlayer() {
           <View style={styles.metaRow}>
             <Meta icon="time-outline" text={`${Math.round(totalSecs / 60)} min`} />
             <Meta icon="flame-outline" text={`~${workout.kcal} kcal`} />
-            <Meta icon="barbell-outline" text={`${uniq.length} ${hi ? 'मूव' : 'moves'}`} />
+            <Meta icon="barbell-outline" text={`${uniq.length} ${hi ? 'एक्सरसाइज़' : 'exercises'}`} />
             <Meta icon="speedometer-outline" text={`${hi ? 'लेवल' : 'Level'} ${settings.level}`} />
           </View>
           {(['warmup', 'main', 'cooldown'] as const).map((b) => {
@@ -331,7 +331,7 @@ export default function WorkoutPlayer() {
         <View style={styles.doneStats}>
           <DoneStat value={`${mins}`} label={hi ? 'मिनट' : 'minutes'} />
           <DoneStat value={`${kcal}`} label="kcal" />
-          <DoneStat value={`${completed}`} label={hi ? 'मूव' : 'moves'} />
+          <DoneStat value={`${completed}`} label={hi ? 'एक्सरसाइज़' : 'exercises'} />
         </View>
         <Text style={styles.doneQ}>{rated ? (hi ? 'धन्यवाद! अगला वर्कआउट उसी हिसाब से बदलेगा।' : 'Thanks! Your next workouts will adjust.') : hi ? 'कैसा लगा?' : 'How did it feel?'}</Text>
         {!rated && (

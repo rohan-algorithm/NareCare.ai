@@ -11,6 +11,7 @@ import { ProgressRing } from '@/src/ui/ProgressRing';
 import { Disclaimer } from '@/src/ui/Disclaimer';
 import { Body, Display, Label, Muted, Title } from '@/src/ui/Typography';
 import { colors, fonts, radii, spacing } from '@/src/theme/tokens';
+import { logStreak } from '@/src/features/streak';
 import { useAppStore } from '@/src/store/useAppStore';
 import { computeProgressPulse } from '@/src/features/progressPulse';
 import { buildInsights, predictNextPeriod } from '@/src/features/insights';
@@ -21,7 +22,7 @@ export default function WeeklyReview() {
   const logs = useAppStore((s) => s.symptomLogs);
   const mealMarks = useAppStore((s) => s.mealMarks);
   const exerciseLogs = useAppStore((s) => s.exerciseLogs);
-  const streakDays = useAppStore((s) => s.streakDays);
+  const streakDays = logStreak(useAppStore((s) => s.symptomLogs)).current;
   const lang = profile?.language ?? 'en';
   const hi = lang === 'hi';
 
@@ -82,7 +83,7 @@ export default function WeeklyReview() {
         <View style={styles.stats}>
           <Stat label={hi ? 'लॉग्स' : 'Logs'} value={String(logs.length)} />
           <Stat label={hi ? 'मील्स' : 'Meals'} value={String(mealsLogged)} />
-          <Stat label={hi ? 'मूव' : 'Move'} value={String(workouts)} />
+          <Stat label={hi ? 'एक्सरसाइज़' : 'Exercise'} value={String(workouts)} />
           <Stat label={hi ? 'स्ट्रीक' : 'Streak'} value={`${streakDays}d`} />
         </View>
 

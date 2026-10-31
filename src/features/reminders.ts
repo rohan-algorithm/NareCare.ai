@@ -8,6 +8,7 @@ import { predictNextPeriod } from '@/src/features/insights';
 import { localDate, planForDate, prefsFrom } from '@/src/features/mealPlan';
 import { formatAlarmTime, type ReminderPref } from '@/src/features/reminderDefaults';
 import { expectedBy, litres, waterGoal } from '@/src/features/water';
+import { logStreak } from '@/src/features/streak';
 import { useAppStore } from '@/src/store/useAppStore';
 
 export type { ReminderKey, ReminderPref } from '@/src/features/reminderDefaults';
@@ -117,7 +118,7 @@ function buildNudges(): Nudge[] {
   const loggedToday = s.symptomLogs.some((l) => l.logDate === today);
   const movedToday = s.exerciseLogs.some((e) => e.completed && e.date.slice(0, 10) === today);
   const goal = waterGoal(p?.weightKg);
-  const streak = s.streakDays;
+  const streak = logStreak(s.symptomLogs).current;
   const out: Nudge[] = [];
   const enabled = (key: string) => s.reminders.find((r) => r.key === key && r.enabled);
 
@@ -365,7 +366,7 @@ export async function sendTestReminder(): Promise<void> {
   await N.scheduleNotificationAsync({
     content: {
       title: '🧘 Test: your workout alarm',
-      body: 'Tap to open Move with the timer ready.',
+      body: 'Tap to open Exercise with the timer ready.',
       data: { url: '/move?start=1' },
     },
     trigger: { type: N.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: 3, channelId: 'naricare-move' },

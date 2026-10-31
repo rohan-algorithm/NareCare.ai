@@ -123,6 +123,7 @@ type AppState = {
   reminders: ReminderPref[];
   posts: CommunityPost[];
   supplements: SupplementLog;
+  /** @deprecated streak is computed from logs; see src/features/streak.ts */
   streakDays: number;
   councilTodayDate: string;
   councilTodayDone: Record<string, boolean>;
@@ -410,9 +411,7 @@ export const useAppStore = create<AppState>()(
         const before = get().symptomLogs;
         const next = before.filter((l) => l.logDate !== log.logDate);
         next.push({ ...log, id });
-        // Only today's first log counts toward the streak; back-filling past days doesn't.
-        const firstToday = log.logDate === today() && !before.some((l) => l.logDate === log.logDate);
-        set({ symptomLogs: next, streakDays: firstToday ? Math.min(30, (get().streakDays || 0) + 1) : get().streakDays });
+        set({ symptomLogs: next });
       },
       toggleHabit: (key) => {
         get().resetHabitsIfNeeded();
@@ -524,7 +523,6 @@ export const useAppStore = create<AppState>()(
         set({
           exerciseLogs: [log, ...get().exerciseLogs].slice(0, 60),
           habitDoneToday: { ...get().habitDoneToday, move: true },
-          streakDays: Math.min(30, (get().streakDays || 0) + 1),
         });
       },
       chatBusy: false,

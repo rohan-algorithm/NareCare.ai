@@ -207,8 +207,8 @@ export const FLARE_CARE = {
       action: null,
     },
     {
-      en: 'Skip Move with kindness — or 3 min breathing',
-      hi: 'Move दया से स्किप — या 3 मिनट साँस',
+      en: 'Skip exercise with kindness — or 3 min breathing',
+      hi: 'एक्सरसाइज़ दया से स्किप — या 3 मिनट साँस',
       href: '/move',
       action: null,
     },

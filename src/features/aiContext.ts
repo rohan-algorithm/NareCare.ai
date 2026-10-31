@@ -1,3 +1,4 @@
+import { logStreak } from '@/src/features/streak';
 import { getCycleDay, getCyclePhase } from '@/src/features/cycle';
 import { computeProgressPulse } from '@/src/features/progressPulse';
 import type { LabAnalysis } from '@/src/features/labAi';
@@ -64,7 +65,7 @@ export function buildAiContext(s: Source): AiContext {
     topSymptoms: Object.entries(totals).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k]) => k.replaceAll('_', ' ')),
     movesLast7: s.exerciseLogs.filter((e) => e.completed && e.date.slice(0, 10) >= since(7)).length,
     mealsFollowed: Object.values(s.mealMarks).filter((m) => m === 'ate' || m === 'swapped').length,
-    streakDays: s.streakDays,
+    streakDays: logStreak(s.symptomLogs).current,
     pulse: { score: pulse.score, headline: pulse.headline, wins: pulse.wins },
     body: (() => {
       const w = (s.bodyLogs ?? []).filter((b) => b.weightKg);

@@ -12,6 +12,7 @@ import { colors, fonts, radii, spacing } from '@/src/theme/tokens';
 import { phenotypeLabel } from '@/src/features/phenotype';
 import { useAppStore } from '@/src/store/useAppStore';
 import { useIsPro } from '@/src/features/pro';
+import { logStreak } from '@/src/features/streak';
 import { Ionicons } from '@/src/ui/Icon';
 
 type Link = {
@@ -106,7 +107,8 @@ export default function Profile() {
   const router = useRouter();
   const profile = useAppStore((s) => s.profile);
   const subscription = useAppStore((s) => s.subscription);
-  const streakDays = useAppStore((s) => s.streakDays);
+  const logs = useAppStore((s) => s.symptomLogs);
+  const streakDays = logStreak(logs).current;
   const exerciseLogs = useAppStore((s) => s.exerciseLogs);
   const signOut = useAppStore((s) => s.signOut);
   const setLanguage = useAppStore((s) => s.setLanguage);

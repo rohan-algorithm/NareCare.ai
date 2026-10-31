@@ -131,7 +131,7 @@ export default function Move() {
     <Screen scroll>
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
-          <Text style={styles.kicker}>{hi ? 'मूव' : 'Move'}</Text>
+          <Text style={styles.kicker}>{hi ? 'एक्सरसाइज़' : 'Exercise'}</Text>
           <Text style={styles.title}>{hi ? 'आज का वर्कआउट' : 'Today’s workout'}</Text>
         </View>
         <Pressable onPress={() => setEditing((v) => !v)} style={styles.iconBtn}>

@@ -29,8 +29,8 @@ export default function TabsLayout() {
   const lang = useAppStore((s) => s.profile?.language ?? 'en');
   const labels =
     lang === 'hi'
-      ? { home: 'होम', diet: 'खाएँ', coach: 'AI', move: 'मूव', track: 'ट्रैक', profile: 'मैं' }
-      : { home: 'Home', diet: 'Eat', coach: 'AI', move: 'Move', track: 'Track', profile: 'Me' };
+      ? { home: 'होम', diet: 'खाएँ', coach: 'AI', move: 'एक्सरसाइज़', track: 'ट्रैक', profile: 'मैं' }
+      : { home: 'Home', diet: 'Eat', coach: 'AI', move: 'Exercise', track: 'Track', profile: 'Me' };
 
   return (
     <Tabs

@@ -36,7 +36,7 @@ const STEPS = [
     id: 'alarm',
     enTitle: 'Alarms → action',
     hiTitle: 'अलार्म → कार्रवाई',
-    en: 'When the exercise alarm rings, open Move and tap Start. No photo needed — just do the 10–15 min routine and mark complete.',
+    en: 'When the exercise alarm rings, open Exercise and tap Start. No photo needed — just do the 10–15 min routine and mark complete.',
     hi: 'एक्सरसाइज़ अलार्म पर Move खोलें और Start दबाएँ। फ़ोटो नहीं — 10–15 मिनट रूटीन करें और पूरा मार्क करें।',
   },
 ];
@@ -115,8 +115,8 @@ export default function Guide() {
             </Title>
             <Muted style={{ marginTop: 6 }}>
               {lang === 'hi'
-                ? 'अलार्म → Move → Start → पूरा करें। फ़ोटो ज़रूरी नहीं।'
-                : 'Alarm → Move → Start → complete. No photo required.'}
+                ? 'अलार्म → एक्सरसाइज़ → Start → पूरा करें। फ़ोटो ज़रूरी नहीं।'
+                : 'Alarm → Exercise → Start → complete. No photo required.'}
             </Muted>
           </View>
         )}
